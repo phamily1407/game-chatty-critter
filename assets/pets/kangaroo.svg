@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
+  <!-- Tail -->
+  <path d="M 150 192 Q 185 172 180 144 Q 175 124 162 134"
+        stroke="#C09050" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <!-- Body -->
+  <ellipse cx="100" cy="160" rx="50" ry="46" fill="#D4A860"/>
+  <!-- Pouch -->
+  <path d="M 76 158 Q 100 175 124 158 Q 122 140 100 138 Q 78 140 76 158 Z" fill="#B88840" opacity="0.65"/>
+  <!-- Small arms (raised slightly) -->
+  <ellipse cx="58" cy="144" rx="12" ry="20" fill="#C09050" transform="rotate(25 58 144)"/>
+  <ellipse cx="142" cy="144" rx="12" ry="20" fill="#C09050" transform="rotate(-25 142 144)"/>
+  <!-- Head (slightly elongated) -->
+  <ellipse cx="100" cy="84" rx="48" ry="56" fill="#D4A860"/>
+  <!-- Large oval ears -->
+  <ellipse cx="68" cy="36" rx="17" ry="33" fill="#D4A860" transform="rotate(-12 68 36)"/>
+  <ellipse cx="68" cy="36" rx="9" ry="23" fill="#E8C898" transform="rotate(-12 68 36)"/>
+  <ellipse cx="132" cy="36" rx="17" ry="33" fill="#D4A860" transform="rotate(12 132 36)"/>
+  <ellipse cx="132" cy="36" rx="9" ry="23" fill="#E8C898" transform="rotate(12 132 36)"/>
+  <!-- Eye whites -->
+  <circle cx="82" cy="80" r="13" fill="white"/>
+  <circle cx="118" cy="80" r="13" fill="white"/>
+  <!-- Iris (warm brown) -->
+  <circle cx="82" cy="80" r="9" fill="#624020"/>
+  <circle cx="118" cy="80" r="9" fill="#624020"/>
+  <!-- Pupils -->
+  <circle cx="82" cy="80" r="5" fill="#180C04"/>
+  <circle cx="118" cy="80" r="5" fill="#180C04"/>
+  <!-- Eye shine -->
+  <circle cx="85" cy="76" r="3" fill="white"/>
+  <circle cx="121" cy="76" r="3" fill="white"/>
+  <!-- Snout (slightly longer) -->
+  <ellipse cx="100" cy="106" rx="20" ry="14" fill="#C09050"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="100" rx="8" ry="6" fill="#1A0C04"/>
+  <!-- Smile -->
+  <path d="M 91 110 Q 100 117 109 110" stroke="#A07030" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- Blush -->
+  <ellipse cx="70" cy="96" rx="11" ry="7" fill="#F0B090" opacity="0.45"/>
+  <ellipse cx="130" cy="96" rx="11" ry="7" fill="#F0B090" opacity="0.45"/>
+  <!-- Big feet -->
+  <ellipse cx="76" cy="202" rx="28" ry="12" fill="#C09050"/>
+  <ellipse cx="124" cy="202" rx="28" ry="12" fill="#C09050"/>
+</svg>

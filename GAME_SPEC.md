@@ -1,6 +1,6 @@
 # Chatty Critter — Game Specification
-**Version:** 1.0  
-**Date:** 2026-05-14  
+**Version:** 1.1  
+**Date:** 2026-05-15  
 **Creator:** Ben (age 9!)  
 **Studio:** Hanalulu Studio
 
@@ -47,7 +47,13 @@ Every session the player:
 | Puppy | Bouncy and loyal |
 | Dragon | Brave and a little dramatic |
 | Bunny | Shy but sweet |
-| Cloud Puff | Dreamy and magical (new & original!) |
+| Cloud Puff | Dreamy and magical (original!) |
+| Fox *(v1.1)* | Sly and clever |
+| Penguin *(v1.1)* | Cool and quirky |
+| Panda *(v1.1)* | Chill and cuddly |
+| Rabbit *(v1.1)* | Quick and curious |
+| Kangaroo *(v1.1)* | Bouncy and bold |
+| Parrot *(v1.1)* | Chatty and bright |
 
 ### 4.2 Choose a Personality
 | Personality | How It Talks |
@@ -144,10 +150,25 @@ The pet's appearance and chat tone changes based on stats:
 - Each catch earns coins and fills Happiness
 - Gets faster each round
 
-### 7.2 Dress Up
-- Pick outfits, hats, accessories for your pet
-- Saved looks can be named and kept
-- Special seasonal outfits (holiday, birthday, space explorer)
+### 7.2 Dress Up *(updated v1.1)*
+
+**Current (v1.1):**
+- Three categories: **Hats**, **Accessories**, **Backgrounds**
+- Items appear as emoji overlays positioned on the pet
+- Tap to equip / tap again to unequip
+- "Clear All" removes everything at once
+- "Save Look" stores the outfit; it shows on the Home screen too
+- 6 items per category (18 total); backgrounds change the pet area colour
+
+**Roadmap for v1.2+:**
+| Feature | Notes |
+|---------|-------|
+| Unlock system | Buy new items from the Shop with coins |
+| Named looks | Save up to 5 named outfits, switch between them |
+| Seasonal items | Holiday hats, birthday cake, space suit |
+| Body items | Capes, scarves, shoes (4th category) |
+| Animated items | Sparkle crown, rainbow trail, floating hearts |
+| Share look | Screenshot button to share your styled pet |
 
 ### 7.3 Memory Match (Bonus Game)
 - Flip cute illustrated cards to find matching pairs

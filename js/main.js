@@ -4,7 +4,18 @@ let decayInterval = null;
 let catchBallGame = null;
 let dressUpController = null;
 
-const HUE_ROTATIONS = [0, 180, 120, 240, -40, 60];
+// 8 colour options: label, hue-rotate degrees, preview swatch hex
+const COLOUR_OPTIONS = [
+  { label: 'Original', deg: 0,    swatch: null },
+  { label: 'Ocean',    deg: 180,  swatch: '#A8D4EC' },
+  { label: 'Forest',   deg: 120,  swatch: '#A8E8C0' },
+  { label: 'Mystic',   deg: 240,  swatch: '#C8A8E8' },
+  { label: 'Ember',    deg: -40,  swatch: '#F4C080' },
+  { label: 'Teal',     deg: 150,  swatch: '#80D8D0' },
+  { label: 'Blossom',  deg: 300,  swatch: '#F4A8D0' },
+  { label: 'Sunny',    deg: 60,   swatch: '#F0E080' },
+];
+const HUE_ROTATIONS = COLOUR_OPTIONS.map(c => c.deg);
 
 const SPECIES = [
   { id: 'cat',        label: 'Cat',        emoji: '🐱', trait: 'Clever & Mysterious' },
@@ -12,6 +23,12 @@ const SPECIES = [
   { id: 'dragon',     label: 'Dragon',     emoji: '🐉', trait: 'Brave & Dramatic' },
   { id: 'bunny',      label: 'Bunny',      emoji: '🐰', trait: 'Shy but Sweet' },
   { id: 'cloud-puff', label: 'Cloud Puff', emoji: '☁️', trait: 'Dreamy & Magical' },
+  { id: 'fox',        label: 'Fox',        emoji: '🦊', trait: 'Sly & Clever' },
+  { id: 'penguin',    label: 'Penguin',    emoji: '🐧', trait: 'Cool & Quirky' },
+  { id: 'panda',      label: 'Panda',      emoji: '🐼', trait: 'Chill & Cuddly' },
+  { id: 'rabbit',     label: 'Rabbit',     emoji: '🐇', trait: 'Quick & Curious' },
+  { id: 'kangaroo',   label: 'Kangaroo',   emoji: '🦘', trait: 'Bouncy & Bold' },
+  { id: 'parrot',     label: 'Parrot',     emoji: '🦜', trait: 'Chatty & Bright' },
 ];
 
 const PERSONALITIES = [
@@ -128,21 +145,37 @@ function selectPersonality(id) {
 function renderColorPicker() {
   const wrap = el('color-picker');
   wrap.innerHTML = '';
-  const colors = ['#F9D0DC','#A8D4EC','#C8F0E0','#E8D4F8','#FFE0A8','#FFD0A8'];
-  const labels = ['Rose', 'Sky', 'Mint', 'Lavender', 'Gold', 'Peach'];
-  colors.forEach((color, i) => {
+  const preview = el('color-preview-img');
+
+  COLOUR_OPTIONS.forEach((opt, i) => {
     const btn = document.createElement('button');
     btn.className = 'color-dot' + (i === creation.colorIndex ? ' selected' : '');
-    btn.style.background = color;
-    btn.title = labels[i];
+    btn.title = opt.label;
+
+    if (opt.swatch) {
+      btn.style.background = opt.swatch;
+    } else {
+      // "Original" swatch: use a mini version of the pet image as a background
+      btn.style.background = 'linear-gradient(135deg,#F9D0DC,#FFE0C8,#C8F0E0)';
+      btn.style.border = '3px solid #3D3550';
+    }
+
     btn.onclick = () => {
       creation.colorIndex = i;
       document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
       btn.classList.add('selected');
-      applyPetHue(el('color-preview-img'), i);
+      // Immediately update the preview image
+      if (preview) applyPetHue(preview, i);
+      // Update label
+      const lbl = el('color-label');
+      if (lbl) lbl.textContent = opt.label;
     };
     wrap.appendChild(btn);
   });
+
+  // Show label for current selection
+  const lbl = el('color-label');
+  if (lbl) lbl.textContent = COLOUR_OPTIONS[creation.colorIndex].label;
 }
 
 function renderPetPreview() {
@@ -330,8 +363,9 @@ function feedPet(foodId) {
   s.energy    = Math.min(100, s.energy    + food.energy);
 
   awardXP(5);
-  updateUI();
   closeModal('feed-modal');
+  triggerFeedAnimation(food.emoji);
+  updateUI();
   showToast(`${state.pet.name} loved the ${food.label}! ${food.emoji}`);
   saveGame(state);
 }
@@ -341,9 +375,63 @@ function bathPet() {
   state.stats.hygiene   = Math.min(100, state.stats.hygiene + 40);
   state.stats.happiness = Math.min(100, state.stats.happiness + 5);
   awardXP(3);
+  triggerBathAnimation();
   updateUI();
   showToast(`${state.pet.name} had a nice bath! 🛁✨`);
   saveGame(state);
+}
+
+// ══ Animations ══
+function triggerFeedAnimation(emoji) {
+  const wrapper = document.querySelector('.home-pet-wrapper');
+  const petImg  = el('home-pet-img');
+  if (!wrapper) return;
+
+  // Floating food emoji
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const float = document.createElement('span');
+      float.className = 'anim-float';
+      float.textContent = emoji;
+      float.style.left  = (30 + Math.random() * 40) + '%';
+      float.style.bottom = '10%';
+      wrapper.appendChild(float);
+      setTimeout(() => float.remove(), 1100);
+    }, i * 180);
+  }
+  // Pet happy bounce
+  if (petImg) {
+    petImg.classList.add('pet-happy-anim');
+    setTimeout(() => petImg.classList.remove('pet-happy-anim'), 700);
+  }
+  // Flash stat bars green
+  document.querySelectorAll('.stat-fill').forEach(f => {
+    f.classList.add('stat-pulse');
+    setTimeout(() => f.classList.remove('stat-pulse'), 600);
+  });
+}
+
+function triggerBathAnimation() {
+  const wrapper = document.querySelector('.home-pet-wrapper');
+  const petImg  = el('home-pet-img');
+  if (!wrapper) return;
+
+  const bubbles = ['💧','🫧','✨','💦'];
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      const b = document.createElement('span');
+      b.className = 'anim-bubble';
+      b.textContent = bubbles[i % bubbles.length];
+      b.style.left   = (10 + Math.random() * 80) + '%';
+      b.style.bottom = (5  + Math.random() * 20) + '%';
+      wrapper.appendChild(b);
+      setTimeout(() => b.remove(), 1400);
+    }, i * 120);
+  }
+  if (petImg) {
+    petImg.classList.add('pet-spin-anim');
+    setTimeout(() => petImg.classList.remove('pet-spin-anim'), 900);
+  }
 }
 
 // ══ Chat ══
@@ -361,7 +449,7 @@ function renderChatHistory() {
   log.scrollTop = log.scrollHeight;
 }
 
-function handleChatSend() {
+async function handleChatSend() {
   const input = el('chat-input');
   const text = input.value.trim();
   if (!text) return;
@@ -373,15 +461,66 @@ function handleChatSend() {
   state.stats.affection = Math.min(100, state.stats.affection + 3);
   state.stats.happiness = Math.min(100, state.stats.happiness + 2);
 
-  setTimeout(() => {
-    const response = getChatResponse(text, state.pet, state.stats);
-    state.chatHistory.push({ role: 'pet', text: response });
-    addChatBubble('pet', response);
-    if (state.chatHistory.length > 40) state.chatHistory = state.chatHistory.slice(-40);
-    awardXP(2);
-    updateStatBars();
-    saveGame(state);
-  }, 600 + Math.random() * 400);
+  // Show typing indicator
+  const typingId = 'typing-' + Date.now();
+  addTypingIndicator(typingId);
+
+  let response;
+  try {
+    // Try Abacus.ai first; falls back to template if no key or error
+    response = await getAIResponse(text, state.chatHistory, state.pet, state.stats);
+  } catch(e) { response = null; }
+
+  if (!response) {
+    await new Promise(r => setTimeout(r, 500 + Math.random() * 400));
+    response = getChatResponse(text, state.pet, state.stats);
+  }
+
+  removeTypingIndicator(typingId);
+  state.chatHistory.push({ role: 'pet', text: response });
+  addChatBubble('pet', response);
+  if (state.chatHistory.length > 40) state.chatHistory = state.chatHistory.slice(-40);
+  awardXP(2);
+  updateStatBars();
+  saveGame(state);
+}
+
+function addTypingIndicator(id) {
+  const log = el('chat-log');
+  const row = document.createElement('div');
+  row.className = 'chat-row pet-row';
+  row.id = id;
+  row.innerHTML = '<div class="chat-bubble pet-bubble typing-bubble"><span></span><span></span><span></span></div>';
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+function removeTypingIndicator(id) {
+  document.getElementById(id)?.remove();
+}
+
+// ── API Key settings ──
+function saveApiKey() {
+  const key = el('api-key-input')?.value?.trim();
+  if (!key) return;
+  localStorage.setItem('chatty_ai_key', key);
+  updateApiStatus();
+  showToast('API key saved! Your pet now uses real AI 🤖✨');
+}
+
+function clearApiKey() {
+  localStorage.removeItem('chatty_ai_key');
+  if (el('api-key-input')) el('api-key-input').value = '';
+  updateApiStatus();
+  showToast('API key removed. Using built-in responses.');
+}
+
+function updateApiStatus() {
+  const statusEl = el('api-status');
+  if (!statusEl) return;
+  const hasKey = !!localStorage.getItem('chatty_ai_key');
+  statusEl.textContent = hasKey ? '🟢 Connected — real AI active' : '⚪ Not connected — using built-in responses';
+  statusEl.style.color  = hasKey ? '#5CB89A' : '#BBAACC';
 }
 
 function addChatBubble(role, text, scroll = true) {
@@ -526,6 +665,11 @@ function renderProfile() {
     petImg.src = `assets/pets/${state.pet.species}.svg`;
     applyPetHue(petImg, state.pet.colorIndex);
   }
+
+  // Restore saved API key into input
+  const keyInput = el('api-key-input');
+  if (keyInput) keyInput.value = localStorage.getItem('chatty_ai_key') || '';
+  updateApiStatus();
 }
 
 function confirmReset() {

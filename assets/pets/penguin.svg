@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
+  <!-- Flippers -->
+  <ellipse cx="48" cy="155" rx="16" ry="40" fill="#1C1830" transform="rotate(-12 48 155)"/>
+  <ellipse cx="152" cy="155" rx="16" ry="40" fill="#1C1830" transform="rotate(12 152 155)"/>
+  <!-- Body (black) -->
+  <ellipse cx="100" cy="160" rx="52" ry="48" fill="#1C1830"/>
+  <!-- White belly -->
+  <ellipse cx="100" cy="164" rx="36" ry="36" fill="#F4F0EC"/>
+  <!-- Head (black) -->
+  <circle cx="100" cy="86" r="52" fill="#1C1830"/>
+  <!-- White face patch -->
+  <ellipse cx="100" cy="92" rx="34" ry="38" fill="#F4F0EC"/>
+  <!-- Eye whites -->
+  <circle cx="82" cy="80" r="13" fill="#F4F0EC"/>
+  <circle cx="118" cy="80" r="13" fill="#F4F0EC"/>
+  <!-- Iris (bright blue) -->
+  <circle cx="82" cy="80" r="9" fill="#3860C0"/>
+  <circle cx="118" cy="80" r="9" fill="#3860C0"/>
+  <!-- Pupils -->
+  <circle cx="82" cy="80" r="5" fill="#080818"/>
+  <circle cx="118" cy="80" r="5" fill="#080818"/>
+  <!-- Eye shine -->
+  <circle cx="85" cy="76" r="3" fill="white"/>
+  <circle cx="121" cy="76" r="3" fill="white"/>
+  <!-- Orange beak -->
+  <polygon points="100,100 93,110 107,110" fill="#F0A020"/>
+  <!-- Beak line -->
+  <line x1="93" y1="105" x2="107" y2="105" stroke="#C07810" stroke-width="1.5"/>
+  <!-- Blush -->
+  <ellipse cx="68" cy="96" rx="10" ry="7" fill="#F0A0C0" opacity="0.5"/>
+  <ellipse cx="132" cy="96" rx="10" ry="7" fill="#F0A0C0" opacity="0.5"/>
+  <!-- Orange feet -->
+  <ellipse cx="82" cy="202" rx="22" ry="10" fill="#F0A020"/>
+  <ellipse cx="118" cy="202" rx="22" ry="10" fill="#F0A020"/>
+  <!-- Toe lines -->
+  <line x1="72" y1="202" x2="72" y2="210" stroke="#C07810" stroke-width="2" stroke-linecap="round"/>
+  <line x1="82" y1="202" x2="82" y2="212" stroke="#C07810" stroke-width="2" stroke-linecap="round"/>
+  <line x1="92" y1="202" x2="92" y2="210" stroke="#C07810" stroke-width="2" stroke-linecap="round"/>
+  <line x1="108" y1="202" x2="108" y2="210" stroke="#C07810" stroke-width="2" stroke-linecap="round"/>
+  <line x1="118" y1="202" x2="118" y2="212" stroke="#C07810" stroke-width="2" stroke-linecap="round"/>
+  <line x1="128" y1="202" x2="128" y2="210" stroke="#C07810" stroke-width="2" stroke-linecap="round"/>
+</svg>

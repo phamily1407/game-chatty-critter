@@ -57,6 +57,7 @@
       <img id="color-preview-img" src="" alt="pet preview">
       <p>Tap a color to try it on!</p>
       <div id="color-picker"></div>
+      <div id="color-label">Original</div>
     </div>
   </div>
 
@@ -222,6 +223,21 @@
         </div>
       </div>
     </div>
+    <!-- API Settings -->
+    <div class="api-card">
+      <div class="api-title">🤖 AI Chat — Abacus.ai (Optional)</div>
+      <div class="api-desc">
+        Connect to <strong>Abacus.ai</strong> for real AI-powered pet replies!<br>
+        Get a free key at <strong>abacus.ai</strong> → Settings → API Keys.
+      </div>
+      <input type="password" id="api-key-input" placeholder="Paste your Abacus.ai API key here…" autocomplete="off">
+      <div class="api-btn-row">
+        <button class="btn-save" onclick="saveApiKey()">✅ Save Key</button>
+        <button class="btn-clear" onclick="clearApiKey()">Clear</button>
+      </div>
+      <div id="api-status">⚪ Not connected — using built-in responses</div>
+    </div>
+
     <button class="reset-btn" onclick="confirmReset()">🗑️ Start Over (erase everything)</button>
   </div>
 
@@ -300,6 +316,7 @@
 <script src="js/storage.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/games.js"></script>
+<script src="js/ai.js"></script>
 <script src="js/main.js"></script>
 <script>
 // ── Wire up Create Wizard UI ──
