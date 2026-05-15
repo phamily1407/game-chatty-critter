@@ -385,36 +385,7 @@ window.goCreateStep = function(step) {
 };
 goCreateStep(1);
 
-// Memory Match difficulty button highlight
-function openMemoryMatch(diff) {
-  document.querySelectorAll('.mm-diff-btn').forEach(b => b.classList.remove('active'));
-  const map = { easy: 0, normal: 1, hard: 2 };
-  const btns = document.querySelectorAll('.mm-diff-btn');
-  if (btns[map[diff]]) btns[map[diff]].classList.add('active');
-  // Call the actual game function from main.js
-  if (typeof window._openMemoryMatch === 'function') window._openMemoryMatch(diff);
-}
-// Alias so main.js function is reachable
-window._openMemoryMatch = function(diff) {
-  const el = id => document.getElementById(id);
-  el('memorymatch-overlay').classList.add('open');
-  if (!window.memoryMatchGame) window.memoryMatchGame = new MemoryMatchGame();
-  window.memoryMatchGame.init('mm-board', diff);
-  window.memoryMatchGame.onEnd = (score, coins, xp, moves, elapsed) => {
-    // Update game state via main.js globals
-    state.coins += coins;
-    state.stats.happiness = Math.min(100, state.stats.happiness + 15);
-    awardXP(xp);
-    updateUI(); saveGame(state);
-    el('mm-result-score').textContent = score;
-    el('mm-result-coins').textContent = coins;
-    el('mm-result-moves').textContent = moves;
-    el('mm-result-time').textContent  = elapsed + 's';
-    el('mm-result-overlay').classList.add('open');
-    if (typeof playLevelUp === 'function') playLevelUp();
-  };
-  window.memoryMatchGame.start();
-};
+// openMemoryMatch is fully handled in main.js — no duplicate needed here.
 </script>
 </body>
 </html>

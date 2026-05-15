@@ -10,7 +10,7 @@ const DEFAULT_STATE = {
   chatHistory: [],
   outfit:   { hat: null, accessory: null, bgId: 'none' },
   // M1 fix: mystery: 0 added; shopUnlocked removed (was unused)
-  inventory: { apple: 3, fish: 1, cake: 0, sushi: 0, smoothie: 0, mystery: 0 },
+  inventory: { apple: 3, fish: 1, cake: 0, sushi: 0, smoothie: 0, mystery: 0, donut: 0, croissant: 0 },
   // M5: chat topic memories
   petMemories: [],
   // M6: daily deal tracking

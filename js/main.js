@@ -229,22 +229,22 @@ function applyStatDecay() {
   if (!state.lastUpdate) return;
   const elapsed = Math.min((Date.now() - state.lastUpdate) / 60000, 180);
   const s = state.stats;
-  s.hunger    = Math.max(10, s.hunger    - elapsed * 1.5);
-  s.happiness = Math.max(10, s.happiness - elapsed * 0.8);
-  s.energy    = Math.max(10, s.energy    - elapsed * 0.6);
-  s.hygiene   = Math.max(10, s.hygiene   - elapsed * 0.4);
-  s.affection = Math.max(10, s.affection - elapsed * 1.0);
+  s.hunger    = Math.max(5, s.hunger    - elapsed * 1.5);
+  s.happiness = Math.max(5, s.happiness - elapsed * 0.8);
+  s.energy    = Math.max(5, s.energy    - elapsed * 0.6);
+  s.hygiene   = Math.max(5, s.hygiene   - elapsed * 0.4);
+  s.affection = Math.max(5, s.affection - elapsed * 1.0);
 }
 
 function startDecay() {
   clearInterval(decayInterval);
   decayInterval = setInterval(() => {
     const s = state.stats;
-    s.hunger    = Math.max(0, s.hunger    - 1.5);
-    s.happiness = Math.max(0, s.happiness - 0.8);
-    s.energy    = Math.max(0, s.energy    - 0.6);
-    s.hygiene   = Math.max(0, s.hygiene   - 0.4);
-    s.affection = Math.max(0, s.affection - 1.0);
+    s.hunger    = Math.max(5, s.hunger    - 1.5);
+    s.happiness = Math.max(5, s.happiness - 0.8);
+    s.energy    = Math.max(5, s.energy    - 0.6);
+    s.hygiene   = Math.max(5, s.hygiene   - 0.4);
+    s.affection = Math.max(5, s.affection - 1.0);
 
     updateStatBars();
     updateNavDot();        // M1
@@ -392,15 +392,26 @@ function openFeedModal() {
   const grid = el('feed-grid');
   grid.innerHTML = '';
   Object.entries(FOOD_ITEMS).forEach(([id, food]) => {
-    const count  = state.inventory[id] || 0;
-    const canBuy = food.price > 0 && state.coins >= food.price;
-    if (!count && !canBuy) return;
+    const count      = state.inventory[id] || 0;
+    const canAfford  = food.price > 0 && state.coins >= food.price;
+    const nearlyAffordable = food.price > 0 && !canAfford && state.coins >= food.price * 0.5; // within 50%
+
+    // Show items you own, can afford, or are close to affording (UX hint)
+    if (!count && !canAfford && !nearlyAffordable) return;
+
     const btn = document.createElement('button');
-    btn.className = 'food-btn';
+    btn.className = 'food-btn' + (!count && !canAfford ? ' food-btn-locked' : '');
+    btn.disabled  = !count && !canAfford;
+
+    let countLabel;
+    if (count > 0)       countLabel = `×${count}`;
+    else if (canAfford)  countLabel = `${food.price} 🪙`;
+    else                 countLabel = `Need ${food.price - state.coins} more 🪙`;
+
     btn.innerHTML = `
       <span class="food-emoji">${food.emoji}</span>
       <span class="food-label">${food.label}</span>
-      <span class="food-count">${count > 0 ? `×${count}` : `${food.price}🪙`}</span>`;
+      <span class="food-count">${countLabel}</span>`;
     btn.onclick = () => feedPet(id);
     grid.appendChild(btn);
   });
@@ -521,6 +532,9 @@ async function handleChatSend() {
   const typingId = 'typing-' + Date.now();
   addTypingIndicator(typingId);
 
+  // Safety net: auto-remove typing indicator after 15 s even if AI hangs
+  const typingSafety = setTimeout(() => removeTypingIndicator(typingId), 15000);
+
   let response;
   try { response = await getAIResponse(text, state.chatHistory, state.pet, state.stats); }
   catch(e) { response = null; }
@@ -543,16 +557,20 @@ async function handleChatSend() {
     response = getChatResponse(text, state.pet, state.stats);
   }
 
+  clearTimeout(typingSafety);
   removeTypingIndicator(typingId);
   state.chatHistory.push({ role: 'pet', text: response });
   addChatBubble('pet', response);
-  if (state.chatHistory.length > 40) state.chatHistory = state.chatHistory.slice(-40);
+  if (state.chatHistory.length > 30) state.chatHistory = state.chatHistory.slice(-30); // trimmed from 40
 
   if (typeof playChat === 'function') playChat();
   awardXP(2);
   updateStatBars();
   updateMemoryBadge();
   saveGame(state);
+
+  // Return keyboard focus to input so player can keep typing
+  el('chat-input')?.focus();
 }
 
 function addChatBubble(role, text, scroll = true) {
@@ -639,6 +657,7 @@ function closeCatchBall() {
 }
 
 function openDressUp() {
+  if (!state.pet?.species) return; // guard: no pet yet
   el('dressup-overlay').classList.add('open');
   const petImg = el('dressup-pet-img');
   petImg.src = `assets/pets/${state.pet.species}.svg`;
@@ -653,24 +672,36 @@ function openDressUp() {
 }
 function closeDressUp() { el('dressup-overlay').classList.remove('open'); dressUpController = null; }
 
-// M4: Memory Match
-let _mmDifficulty = 'normal';
+// M4: Memory Match — single source of truth, no duplicate in index.html
+let _mmLocked = false; // prevent double-tap race condition
 function openMemoryMatch(difficulty = 'normal') {
-  _mmDifficulty = difficulty;
+  if (_mmLocked) return;
+  _mmLocked = true;
+  setTimeout(() => { _mmLocked = false; }, 600); // debounce 600 ms
+
+  // Highlight active difficulty button
+  document.querySelectorAll('.mm-diff-btn').forEach(b => b.classList.remove('active'));
+  const idx = { easy: 0, normal: 1, hard: 2 }[difficulty] ?? 1;
+  const btns = document.querySelectorAll('.mm-diff-btn');
+  if (btns[idx]) btns[idx].classList.add('active');
+
   el('memorymatch-overlay').classList.add('open');
+  el('mm-result-overlay').classList.remove('open'); // clear old result
+
   memoryMatchGame = new MemoryMatchGame();
   memoryMatchGame.init('mm-board', difficulty);
   memoryMatchGame.onEnd = (score, coins, xp, moves, elapsed) => {
     state.coins += coins;
     state.stats.happiness = Math.min(100, state.stats.happiness + 15);
     awardXP(xp);
-    updateUI(); saveGame(state);
-    el('mm-result-score').textContent  = score;
-    el('mm-result-coins').textContent  = coins;
-    el('mm-result-moves').textContent  = moves;
-    el('mm-result-time').textContent   = elapsed + 's';
+    saveGame(state); // save immediately before any animation
+    updateUI();
+    el('mm-result-score').textContent = score;
+    el('mm-result-coins').textContent = coins;
+    el('mm-result-moves').textContent = moves;
+    el('mm-result-time').textContent  = elapsed + 's';
     el('mm-result-overlay').classList.add('open');
-    if (typeof playLevelUp === 'function') playLevelUp();
+    if (typeof playMatch === 'function') playMatch();
   };
   memoryMatchGame.start();
 }
@@ -703,12 +734,13 @@ function _computeDailyDeal() {
   const today = todayKey();
   if (state.dailyDeal?.date === today) return state.dailyDeal;
   const items = Object.keys(SHOP_ITEMS).filter(id => SHOP_ITEMS[id].price > 0);
-  const seed  = today.replace(/-/g,'').split('').reduce((a,b) => a + +b, 0);
+  if (!items.length) return { date: today, itemId: null, salePrice: 0, purchased: 0 }; // guard: no paid items
+  const seed   = today.replace(/-/g,'').split('').reduce((a,b) => a + +b, 0);
   const itemId = items[seed % items.length];
   state.dailyDeal = {
     date: today, itemId,
-    salePrice:  Math.round(FOOD_ITEMS[itemId].price * 0.6),
-    purchased:  0,
+    salePrice: Math.round(FOOD_ITEMS[itemId].price * 0.6),
+    purchased: 0,
   };
   saveGame(state);
   return state.dailyDeal;
@@ -887,7 +919,11 @@ function runConfetti() {
 }
 
 // ══ Daily Streak ══
-function todayKey() { return new Date().toISOString().slice(0, 10); }
+// Use local date (not UTC) so the day resets at local midnight, not UTC midnight
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 function checkDailyStreak() {
   const today = todayKey();
