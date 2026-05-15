@@ -90,7 +90,37 @@ document.addEventListener('DOMContentLoaded', () => {
     showCreateScreen();
   }
   _updateSoundBtn();
+  _initGlobalButtonJuice(); // wire UI animations + sounds to every button
 });
+
+// ══ Global UI Juice ══
+// Adds bounce animation + click sound to every button press automatically
+function _initGlobalButtonJuice() {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn || btn.dataset.noSound === 'true') return;
+
+    // Bounce animation
+    btn.classList.remove('btn-pressed');
+    void btn.offsetWidth; // force reflow to restart animation
+    btn.classList.add('btn-pressed');
+    setTimeout(() => btn.classList.remove('btn-pressed'), 280);
+
+    // Skip click sound for buttons that play their own sound
+    const skipSoundSelectors = ['.nav-btn', '#sound-btn', '.hug-btn', '#chat-send',
+                                 '.food-btn', '.shop-buy', '.play-again-btn'];
+    const hasOwnSound = skipSoundSelectors.some(sel => btn.matches(sel) || btn.closest(sel));
+    if (!hasOwnSound && typeof playClick === 'function') playClick();
+  });
+
+  // Species card wobble on select
+  document.addEventListener('click', e => {
+    const card = e.target.closest('.species-card');
+    if (!card) return;
+    card.classList.remove('selected');
+    void card.offsetWidth;
+  });
+}
 
 // ══ Screen routing ══
 function showCreateScreen() {
@@ -111,11 +141,16 @@ function navigate(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   el(screenId + '-screen').classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.nav-btn[data-screen="${screenId}"]`)?.classList.add('active');
+  const activeBtn = document.querySelector(`.nav-btn[data-screen="${screenId}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (typeof playNavTap === 'function') playNavTap();
 
   if (screenId === 'chat')    { updateChatHeader(); renderChatHistory(); }
   if (screenId === 'shop')    renderShop();
   if (screenId === 'profile') renderProfile();
+  if (screenId === 'home')    { updateNavDot(); updateMoodExpression(); }
+  if (screenId === 'games')   renderChallenges();
 }
 
 // ══ Create Pet Wizard ══
@@ -229,22 +264,22 @@ function applyStatDecay() {
   if (!state.lastUpdate) return;
   const elapsed = Math.min((Date.now() - state.lastUpdate) / 60000, 180);
   const s = state.stats;
-  s.hunger    = Math.max(5, s.hunger    - elapsed * 1.5);
-  s.happiness = Math.max(5, s.happiness - elapsed * 0.8);
-  s.energy    = Math.max(5, s.energy    - elapsed * 0.6);
-  s.hygiene   = Math.max(5, s.hygiene   - elapsed * 0.4);
-  s.affection = Math.max(5, s.affection - elapsed * 1.0);
+  s.hunger    = Math.max(5, s.hunger    - elapsed * 0.9);  // rebalanced
+  s.happiness = Math.max(5, s.happiness - elapsed * 0.5);
+  s.energy    = Math.max(5, s.energy    - elapsed * 0.4);
+  s.hygiene   = Math.max(5, s.hygiene   - elapsed * 0.25);
+  s.affection = Math.max(5, s.affection - elapsed * 0.6);
 }
 
 function startDecay() {
   clearInterval(decayInterval);
   decayInterval = setInterval(() => {
     const s = state.stats;
-    s.hunger    = Math.max(5, s.hunger    - 1.5);
-    s.happiness = Math.max(5, s.happiness - 0.8);
-    s.energy    = Math.max(5, s.energy    - 0.6);
-    s.hygiene   = Math.max(5, s.hygiene   - 0.4);
-    s.affection = Math.max(5, s.affection - 1.0);
+    s.hunger    = Math.max(5, s.hunger    - 0.9);  // rebalanced: 40% slower
+    s.happiness = Math.max(5, s.happiness - 0.5);
+    s.energy    = Math.max(5, s.energy    - 0.4);
+    s.hygiene   = Math.max(5, s.hygiene   - 0.25);
+    s.affection = Math.max(5, s.affection - 0.6);
 
     updateStatBars();
     updateNavDot();        // M1
@@ -389,6 +424,7 @@ function applyOutfitToHome() {
 
 // ══ Feeding ══
 function openFeedModal() {
+  if (typeof playModalOpen === 'function') playModalOpen();
   const grid = el('feed-grid');
   grid.innerHTML = '';
   Object.entries(FOOD_ITEMS).forEach(([id, food]) => {
@@ -435,6 +471,8 @@ function feedPet(foodId) {
   awardXP(5);
   closeModal('feed-modal');
   triggerFeedAnimation(food.emoji);
+  flashStatBars(['hunger','happiness','energy']);
+  tickChallenge('feed');
   if (typeof playFeed === 'function') playFeed();
   updateUI();
   showToast(`${state.pet.name} loved the ${food.label}! ${food.emoji}`);
@@ -448,6 +486,8 @@ function bathPet() {
   state.stats.affection = Math.min(100, state.stats.affection + 3); // M2
   awardXP(3);
   triggerBathAnimation();
+  flashStatBars(['hygiene','affection','happiness']);
+  tickChallenge('bath');
   if (typeof playBath === 'function') playBath();
   updateUI();
   showToast(`${state.pet.name} had a nice bath! 🛁✨`);
@@ -565,6 +605,7 @@ async function handleChatSend() {
 
   if (typeof playChat === 'function') playChat();
   awardXP(2);
+  tickChallenge('chat');
   updateStatBars();
   updateMemoryBadge();
   saveGame(state);
@@ -630,8 +671,10 @@ function openCatchBall() {
   catchBallGame.onEnd = (score, coins) => {
     state.coins += coins;
     state.stats.happiness = Math.min(100, state.stats.happiness + Math.min(score * 2, 30));
-    state.stats.energy    = Math.max(0,   state.stats.energy    - 10);
+    state.stats.energy    = Math.max(5,   state.stats.energy    - 10);
     awardXP(score + 5);
+    animateCoinChange(coins);
+    tickChallenge('catch'); // ticked per ball above via score, but also tick for completion
     updateUI(); saveGame(state);
     el('gameover-score').textContent = score;
     el('gameover-coins').textContent = coins;
@@ -694,6 +737,8 @@ function openMemoryMatch(difficulty = 'normal') {
     state.coins += coins;
     state.stats.happiness = Math.min(100, state.stats.happiness + 15);
     awardXP(xp);
+    tickChallenge('mm');
+    animateCoinChange(coins);
     saveGame(state); // save immediately before any animation
     updateUI();
     el('mm-result-score').textContent = score;
@@ -701,7 +746,7 @@ function openMemoryMatch(difficulty = 'normal') {
     el('mm-result-moves').textContent = moves;
     el('mm-result-time').textContent  = elapsed + 's';
     el('mm-result-overlay').classList.add('open');
-    if (typeof playMatch === 'function') playMatch();
+    if (typeof playLevelUp === 'function') playLevelUp();
   };
   memoryMatchGame.start();
 }
@@ -787,11 +832,16 @@ function renderShop() {
 
 function buyItem(id) {
   const item = SHOP_ITEMS[id];
-  if (!item || state.coins < item.price) { showToast('Not enough coins! 🪙'); return; }
+  if (!item || state.coins < item.price) {
+    if (typeof playError === 'function') playError();
+    showToast('Not enough coins! 🪙'); return;
+  }
   state.coins -= item.price;
   state.inventory[id] = (state.inventory[id] || 0) + 1;
-  if (typeof playBuy === 'function') playBuy();
-  updateCoinDisplay(); renderShop();
+  if (typeof playPurchase === 'function') playPurchase();
+  animateCoinChange();
+  tickChallenge('shop');
+  renderShop(); updateCoinDisplay();
   showToast(`Bought ${item.label}! ${item.emoji}`);
   saveGame(state);
 }
@@ -799,12 +849,16 @@ function buyItem(id) {
 function buyDailyDeal() {
   const deal = state.dailyDeal;
   if (!deal?.itemId || deal.purchased >= 3) return;
-  if (state.coins < deal.salePrice) { showToast('Not enough coins! 🪙'); return; }
+  if (state.coins < deal.salePrice) {
+    if (typeof playError === 'function') playError();
+    showToast('Not enough coins! 🪙'); return;
+  }
   state.coins -= deal.salePrice;
   state.inventory[deal.itemId] = (state.inventory[deal.itemId] || 0) + 1;
   deal.purchased++;
-  if (typeof playBuy === 'function') playBuy();
-  updateCoinDisplay(); renderShop();
+  if (typeof playPurchase === 'function') playPurchase();
+  animateCoinChange();
+  renderShop(); updateCoinDisplay();
   showToast(`Daily deal bought! ${FOOD_ITEMS[deal.itemId].emoji} 🎉`);
   saveGame(state);
 }
@@ -994,13 +1048,195 @@ function applyPetHue(imgEl, colorIndex) {
   imgEl.style.filter = deg === 0 ? 'none' : `hue-rotate(${deg}deg)`;
 }
 
-function closeModal(id) { el(id).classList.remove('open'); }
+function closeModal(id) {
+  el(id).classList.remove('open');
+  if (typeof playModalClose === 'function') playModalClose();
+}
 
 function showToast(message) {
   document.querySelector('.toast')?.remove();
   const t = document.createElement('div');
   t.className = 'toast'; t.textContent = message;
   document.body.appendChild(t);
+  if (typeof playTick === 'function') playTick();
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 2800);
+}
+
+// ══ UI Animation Helpers ══
+
+// Animate all coin counters with pop + optional sound
+function animateCoinChange(coinsAdded) {
+  document.querySelectorAll('.coin-count').forEach(c => {
+    c.classList.remove('coin-pop');
+    void c.offsetWidth;
+    c.classList.add('coin-pop');
+    setTimeout(() => c.classList.remove('coin-pop'), 520);
+  });
+  if (coinsAdded && typeof playCoinGain === 'function') playCoinGain(coinsAdded);
+}
+
+// Flash stat bars after they are filled
+function flashStatBars(keys) {
+  const targets = keys || ['happiness','hunger','energy','hygiene','affection'];
+  targets.forEach(key => {
+    const fill = document.querySelector(`.stat-fill[data-stat="${key}"]`);
+    if (!fill) return;
+    fill.classList.remove('stat-flash');
+    void fill.offsetWidth;
+    fill.classList.add('stat-flash');
+    setTimeout(() => fill.classList.remove('stat-flash'), 450);
+  });
+  if (typeof playStatFill === 'function') playStatFill();
+}
+
+// ══ HUG your pet! ══
+let _hugCooldown = false;
+function hugPet() {
+  if (_hugCooldown) return;
+  _hugCooldown = true;
+
+  const btn = document.querySelector('.hug-btn');
+  if (btn) btn.classList.add('cooldown');
+
+  state.stats.affection = Math.min(100, state.stats.affection + 12);
+  state.stats.happiness = Math.min(100, state.stats.happiness + 6);
+
+  // Floating hearts
+  const wrapper = document.querySelector('.home-pet-wrapper');
+  if (wrapper) {
+    const hearts = ['💕','💖','💗','💓','❤️','🩷'];
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const h = document.createElement('span');
+        h.className = 'heart-float';
+        h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        h.style.left  = (15 + Math.random() * 70) + '%';
+        h.style.bottom = '20%';
+        h.style.setProperty('--r', (Math.random() * 30 - 15) + 'deg');
+        wrapper.appendChild(h);
+        setTimeout(() => h.remove(), 1500);
+      }, i * 100);
+    }
+  }
+
+  // Pet happy bounce
+  const petImg = el('home-pet-img');
+  if (petImg) { petImg.classList.add('pet-happy-anim'); setTimeout(() => petImg.classList.remove('pet-happy-anim'), 700); }
+
+  if (typeof playHug === 'function') playHug();
+  tickChallenge('hug');
+  updateStatBars();
+  flashStatBars(['affection','happiness']);
+  saveGame(state);
+  showToast(`${state.pet?.name} loves you SO much! 💖`);
+
+  // 30-second cooldown
+  setTimeout(() => {
+    _hugCooldown = false;
+    const btn = document.querySelector('.hug-btn');
+    if (btn) btn.classList.remove('cooldown');
+  }, 30000);
+}
+
+// ══ TAP your pet ══
+const _tapReactions = [
+  '✨ *perks up happily!*',
+  '😄 *wiggles with joy!*',
+  '💖 *loves the attention!*',
+  '🎵 *does a little dance!*',
+  '😊 *nuzzles your hand!*',
+  '🌟 *glows with happiness!*',
+];
+function tapPet() {
+  const petImg = el('home-pet-img');
+  if (petImg) {
+    petImg.classList.remove('pet-tap');
+    void petImg.offsetWidth;
+    petImg.classList.add('pet-tap');
+    setTimeout(() => petImg.classList.remove('pet-tap'), 520);
+  }
+  if (typeof playTap === 'function') playTap();
+  state.stats.happiness = Math.min(100, state.stats.happiness + 2);
+  state.stats.affection = Math.min(100, state.stats.affection + 1);
+  const reaction = _tapReactions[Math.floor(Math.random() * _tapReactions.length)];
+  showToast(`${state.pet?.name} ${reaction}`);
+  updateStatBars();
+  saveGame(state);
+}
+
+// ══ Daily Challenges ══
+const CHALLENGE_POOL = [
+  { id: 'chat5',   text: 'Chat 5 times',        target: 5,  reward: 20, key: 'chat'  },
+  { id: 'feed3',   text: 'Feed 3 times',         target: 3,  reward: 15, key: 'feed'  },
+  { id: 'catch10', text: 'Catch 10 balls',       target: 10, reward: 25, key: 'catch' },
+  { id: 'bath1',   text: 'Give a bath',          target: 1,  reward: 10, key: 'bath'  },
+  { id: 'hug1',    text: 'Give a hug',           target: 1,  reward: 10, key: 'hug'   },
+  { id: 'shop1',   text: 'Buy something',        target: 1,  reward: 15, key: 'shop'  },
+  { id: 'mm1',     text: 'Play Memory Match',    target: 1,  reward: 20, key: 'mm'    },
+  { id: 'chat10',  text: 'Chat 10 times',        target: 10, reward: 35, key: 'chat'  },
+  { id: 'catch20', text: 'Catch 20 balls',       target: 20, reward: 40, key: 'catch' },
+  { id: 'hug3',    text: 'Hug 3 times',          target: 3,  reward: 25, key: 'hug'   },
+];
+
+function _getDailyChallenges() {
+  const today = todayKey();
+  if (state.dailyChallenges?.date === today) return state.dailyChallenges;
+
+  // Pick 3 random challenges for today
+  const seed    = today.replace(/-/g,'').split('').reduce((a,b) => a + +b, 0);
+  const shuffled = [...CHALLENGE_POOL].sort((a, b) => {
+    const ha = Math.sin(seed + a.id.charCodeAt(0)) * 10000;
+    const hb = Math.sin(seed + b.id.charCodeAt(0)) * 10000;
+    return (ha - Math.floor(ha)) - (hb - Math.floor(hb));
+  });
+  const picked = shuffled.slice(0, 3);
+
+  state.dailyChallenges = {
+    date: today,
+    challenges: picked.map(c => ({ ...c, progress: 0, done: false })),
+  };
+  saveGame(state);
+  return state.dailyChallenges;
+}
+
+function tickChallenge(key) {
+  const dc = state.dailyChallenges;
+  if (!dc || dc.date !== todayKey()) return;
+  let anyCompleted = false;
+  dc.challenges.forEach(c => {
+    if (c.done || c.key !== key) return;
+    c.progress = Math.min(c.target, c.progress + 1);
+    if (c.progress >= c.target && !c.done) {
+      c.done = true;
+      state.coins += c.reward;
+      animateCoinChange(c.reward);
+      if (typeof playChallengeDone === 'function') playChallengeDone();
+      showToast(`✅ Challenge done! "${c.text}" +${c.reward} 🪙`);
+      anyCompleted = true;
+    }
+  });
+  if (anyCompleted) { saveGame(state); updateCoinDisplay(); renderChallenges(); }
+  else saveGame(state);
+}
+
+function renderChallenges() {
+  const wrap = el('challenges-wrap');
+  if (!wrap) return;
+  const dc = _getDailyChallenges();
+  const allDone = dc.challenges.every(c => c.done);
+
+  wrap.innerHTML = `
+    <div class="challenges-title">
+      🎯 Today's Challenges ${allDone ? '🎉' : ''}
+    </div>
+    ${dc.challenges.map(c => `
+      <div class="challenge-row ${c.done ? 'done' : ''}">
+        <span class="challenge-check">${c.done ? '✅' : '⬜'}</span>
+        <span class="challenge-text">${c.text}</span>
+        <span class="challenge-progress">${c.progress}/${c.target}</span>
+        <span class="challenge-reward">+${c.reward}🪙</span>
+      </div>
+    `).join('')}
+  `;
 }

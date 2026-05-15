@@ -15,6 +15,8 @@ const DEFAULT_STATE = {
   petMemories: [],
   // M6: daily deal tracking
   dailyDeal: { date: null, itemId: null, salePrice: 0, purchased: 0 },
+  // daily challenges
+  dailyChallenges: { date: null, challenges: [] },
   // M2: bond/affection tracking
   friendsSince:      null,
   lastHighAffection: null,

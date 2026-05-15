@@ -80,7 +80,7 @@
       <div class="home-pet-wrapper">
         <span id="home-hat" class="outfit-overlay"></span>
         <span id="home-accessory" class="outfit-overlay"></span>
-        <img id="home-pet-img" src="" alt="your pet">
+        <img id="home-pet-img" src="" alt="your pet" onclick="tapPet()" style="cursor:pointer" title="Tap me!">
         <!-- M3: mood expression overlay -->
         <span id="mood-expression" class="mood-expression"></span>
       </div>
@@ -109,6 +109,10 @@
         <button class="quick-btn" onclick="navigate('games')"><span class="q-icon">🎮</span>Play</button>
         <button class="quick-btn" onclick="navigate('chat')"><span class="q-icon">💬</span>Chat</button>
       </div>
+      <!-- Hug button -->
+      <div style="padding:8px 0 14px;display:flex;justify-content:center">
+        <button class="hug-btn" onclick="hugPet()" title="Hug your pet!">🤗</button>
+      </div>
     </div>
   </div>
 
@@ -135,6 +139,11 @@
   <div class="screen" id="games-screen">
     <p class="screen-title">Mini-Games 🎮</p>
     <p class="screen-sub">Play games to earn coins and make your pet happy!</p>
+
+    <!-- Daily Challenges -->
+    <div class="challenges-card">
+      <div id="challenges-wrap"></div>
+    </div>
 
     <div class="game-card" onclick="openCatchBall()">
       <div class="game-icon">🎾</div>

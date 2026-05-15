@@ -121,3 +121,87 @@ function playWarning() {
   _tone(330, 0.12, 'triangle', 0.18);
   _tone(280, 0.18, 'triangle', 0.15, 0.14);
 }
+
+// ── UI Interaction Sounds ──
+
+// Generic button tap (light, non-intrusive)
+function playClick() {
+  _tone(700, 0.06, 'sine', 0.09);
+}
+
+// Navigation tab switch (two-note chime)
+function playNavTap() {
+  _tone(523, 0.06, 'sine', 0.11);
+  _tone(784, 0.09, 'sine', 0.09, 0.05);
+}
+
+// Sheet / modal opens (ascending trio)
+function playModalOpen() {
+  _tone(392, 0.07, 'sine', 0.13);
+  _tone(523, 0.09, 'sine', 0.11, 0.06);
+  _tone(659, 0.11, 'sine', 0.09, 0.12);
+}
+
+// Sheet / modal closes (descending)
+function playModalClose() {
+  _tone(659, 0.06, 'sine', 0.11);
+  _tone(392, 0.09, 'sine', 0.09, 0.06);
+}
+
+// Coins gained — louder and richer for bigger amounts
+function playCoinGain(amount) {
+  if (!isSoundEnabled()) return;
+  if ((amount || 0) >= 50) {
+    [523, 659, 784, 1047].forEach((f, i) => _tone(f, 0.16, 'sine', 0.22, i * 0.07));
+  } else if ((amount || 0) >= 15) {
+    [659, 784, 1047].forEach((f, i) => _tone(f, 0.13, 'sine', 0.19, i * 0.07));
+  } else {
+    _tone(880, 0.08, 'sine', 0.16);
+    _tone(1047, 0.10, 'sine', 0.14, 0.07);
+  }
+}
+
+// Stat bar fills up (soft rising chime)
+function playStatFill() {
+  _tone(660, 0.07, 'sine', 0.13);
+  _tone(880, 0.09, 'sine', 0.10, 0.06);
+}
+
+// Can't afford / error (soft low buzz)
+function playError() {
+  _tone(200, 0.11, 'sawtooth', 0.13);
+  _tone(165, 0.14, 'sawtooth', 0.10, 0.07);
+}
+
+// Hug the pet (warm full-chord swell)
+function playHug() {
+  [392, 523, 659, 784, 1047].forEach((f, i) => _tone(f, 0.22, 'sine', 0.16, i * 0.08));
+}
+
+// Pet tap reaction (quick playful ping)
+function playTap() {
+  _tone(880,  0.06, 'triangle', 0.14);
+  _tone(1175, 0.08, 'triangle', 0.10, 0.06);
+}
+
+// Achievement unlocked (triumphant 4-note)
+function playAchievement() {
+  [523, 784, 1047, 1319].forEach((f, i) => _tone(f, 0.18, 'sine', 0.24, i * 0.10));
+}
+
+// Challenge completed (bright success)
+function playChallengeDone() {
+  [784, 1047, 1319, 1047, 1319].forEach((f, i) => _tone(f, 0.12, 'sine', 0.2, i * 0.08));
+}
+
+// Daily challenge tick (soft confirmation)
+function playTick() {
+  _tone(660, 0.06, 'sine', 0.12);
+}
+
+// Shop item purchased (register-style)
+function playPurchase() {
+  _tone(784, 0.07, 'sine', 0.18);
+  _tone(1047, 0.10, 'sine', 0.16, 0.06);
+  _tone(1319, 0.13, 'sine', 0.13, 0.12);
+}
