@@ -223,14 +223,28 @@
         </div>
       </div>
     </div>
-    <!-- API Settings -->
+    <!-- AI Settings -->
     <div class="api-card">
-      <div class="api-title">🤖 AI Chat — Abacus.ai (Optional)</div>
-      <div class="api-desc">
-        Connect to <strong>Abacus.ai</strong> for real AI-powered pet replies!<br>
-        Get a free key at <strong>abacus.ai</strong> → Settings → API Keys.
+      <div class="api-title">🤖 Real AI Chat <span class="api-badge-free">FREE</span></div>
+      <div class="api-desc">Give your pet real AI smarts! Pick a provider, get a free key, and paste it below.</div>
+
+      <div class="api-provider-row">
+        <label class="api-label" for="ai-provider-select">Provider</label>
+        <select id="ai-provider-select" onchange="onProviderChange()">
+          <option value="groq">⚡ Groq — Llama 3 (Fastest, Free)</option>
+          <option value="gemini">✨ Google Gemini Flash (Free)</option>
+          <option value="abacus">🔮 Abacus.ai (Free credits)</option>
+        </select>
       </div>
-      <input type="password" id="api-key-input" placeholder="Paste your Abacus.ai API key here…" autocomplete="off">
+
+      <div class="api-provider-hint" id="api-provider-hint">
+        Free key at: console.groq.com &nbsp;•&nbsp; No credit card needed!
+      </div>
+
+      <input type="password" id="api-key-input"
+             placeholder="Paste your Groq key here… (starts with gsk_)"
+             autocomplete="off">
+
       <div class="api-btn-row">
         <button class="btn-save" onclick="saveApiKey()">✅ Save Key</button>
         <button class="btn-clear" onclick="clearApiKey()">Clear</button>

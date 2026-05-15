@@ -499,18 +499,35 @@ function removeTypingIndicator(id) {
   document.getElementById(id)?.remove();
 }
 
-// ── API Key settings ──
+// ── AI Provider settings ──
+function onProviderChange() {
+  const provider = el('ai-provider-select')?.value || 'groq';
+  const info = (typeof AI_PROVIDERS !== 'undefined' && AI_PROVIDERS[provider]) || {};
+
+  const hintEl = el('api-provider-hint');
+  if (hintEl) hintEl.textContent = info.hint || '';
+
+  const input = el('api-key-input');
+  if (input) input.placeholder = info.placeholder || 'Paste your API key here…';
+}
+
 function saveApiKey() {
-  const key = el('api-key-input')?.value?.trim();
-  if (!key) return;
-  localStorage.setItem('chatty_ai_key', key);
+  const key      = el('api-key-input')?.value?.trim();
+  const provider = el('ai-provider-select')?.value || 'groq';
+  if (!key) { showToast('Please paste your API key first!'); return; }
+  localStorage.setItem('chatty_ai_key',      key);
+  localStorage.setItem('chatty_ai_provider', provider);
   updateApiStatus();
-  showToast('API key saved! Your pet now uses real AI 🤖✨');
+  const names = { groq: 'Groq (Llama 3)', gemini: 'Gemini Flash', abacus: 'Abacus.ai' };
+  showToast(`${names[provider] || 'AI'} connected! Your pet is now smarter 🤖✨`);
 }
 
 function clearApiKey() {
   localStorage.removeItem('chatty_ai_key');
-  if (el('api-key-input')) el('api-key-input').value = '';
+  localStorage.removeItem('chatty_ai_provider');
+  if (el('api-key-input'))       el('api-key-input').value = '';
+  if (el('ai-provider-select'))  el('ai-provider-select').value = 'groq';
+  onProviderChange();
   updateApiStatus();
   showToast('API key removed. Using built-in responses.');
 }
@@ -518,9 +535,13 @@ function clearApiKey() {
 function updateApiStatus() {
   const statusEl = el('api-status');
   if (!statusEl) return;
-  const hasKey = !!localStorage.getItem('chatty_ai_key');
-  statusEl.textContent = hasKey ? '🟢 Connected — real AI active' : '⚪ Not connected — using built-in responses';
-  statusEl.style.color  = hasKey ? '#5CB89A' : '#BBAACC';
+  const hasKey   = !!localStorage.getItem('chatty_ai_key');
+  const provider = localStorage.getItem('chatty_ai_provider') || 'groq';
+  const names    = { groq: 'Groq (Llama 3)', gemini: 'Gemini Flash', abacus: 'Abacus.ai' };
+  statusEl.textContent = hasKey
+    ? `🟢 Connected via ${names[provider] || provider} — real AI active`
+    : '⚪ Not connected — using built-in responses';
+  statusEl.style.color = hasKey ? '#5CB89A' : '#BBAACC';
 }
 
 function addChatBubble(role, text, scroll = true) {
@@ -666,9 +687,12 @@ function renderProfile() {
     applyPetHue(petImg, state.pet.colorIndex);
   }
 
-  // Restore saved API key into input
+  // Restore saved AI settings
   const keyInput = el('api-key-input');
   if (keyInput) keyInput.value = localStorage.getItem('chatty_ai_key') || '';
+  const provSel = el('ai-provider-select');
+  if (provSel) provSel.value = localStorage.getItem('chatty_ai_provider') || 'groq';
+  onProviderChange();
   updateApiStatus();
 }
 

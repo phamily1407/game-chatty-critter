@@ -724,19 +724,50 @@ img    { display: block; }
   margin-top: 8px; text-align: center;
 }
 
-/* ── API Settings card ── */
+/* ── API / AI Settings card ── */
 .api-card {
   background: var(--white); border-radius: 20px;
   padding: 18px; box-shadow: 0 3px 14px var(--shadow);
   display: flex; flex-direction: column; gap: 10px;
 }
-.api-card .api-title { font-size: 15px; font-weight: 900; color: var(--plum); }
-.api-card .api-desc  { font-size: 12px; font-weight: 600; color: var(--mauve); line-height: 1.5; }
+.api-card .api-title {
+  font-size: 15px; font-weight: 900; color: var(--plum);
+  display: flex; align-items: center; gap: 8px;
+}
+.api-badge-free {
+  font-size: 10px; font-weight: 900; letter-spacing: 0.5px;
+  background: linear-gradient(135deg,var(--mint-d),var(--sky-d));
+  color: white; padding: 2px 8px; border-radius: 50px;
+}
+.api-card .api-desc { font-size: 12px; font-weight: 600; color: var(--mauve); line-height: 1.5; }
+
+.api-provider-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.api-label {
+  font-size: 12px; font-weight: 800; color: var(--mauve); white-space: nowrap;
+}
+#ai-provider-select {
+  flex: 1; padding: 10px 14px; border-radius: 50px;
+  border: 2px solid var(--mauve-ll); background: var(--bg);
+  font-family: var(--font); font-size: 13px; font-weight: 700;
+  color: var(--plum); outline: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238878AA' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+  padding-right: 36px;
+}
+#ai-provider-select:focus { border-color: var(--mint-d); }
+
+.api-provider-hint {
+  font-size: 11px; font-weight: 700; color: var(--mint-d);
+  text-align: center; padding: 2px 0;
+}
 #api-key-input {
   width: 100%; padding: 11px 16px; border-radius: 50px;
   border: 2px solid var(--mauve-ll); background: var(--bg);
   font-family: var(--font); font-size: 13px; font-weight: 600;
-  color: var(--plum); outline: none;
+  color: var(--plum); outline: none; transition: border-color 0.2s;
 }
 #api-key-input:focus { border-color: var(--mint-d); }
 .api-btn-row { display: flex; gap: 8px; }
@@ -745,15 +776,17 @@ img    { display: block; }
   color: var(--white); font-family: var(--font);
   font-size: 14px; font-weight: 800; border-radius: 50px;
   padding: 10px; border: none; cursor: pointer;
+  transition: all 0.2s; box-shadow: 0 3px 10px rgba(93,184,154,0.35);
 }
+.api-btn-row .btn-save:hover  { transform: translateY(-2px); }
+.api-btn-row .btn-save:active { transform: scale(0.96); }
 .api-btn-row .btn-clear {
   background: var(--mauve-ll); color: var(--mauve);
   font-family: var(--font); font-size: 14px; font-weight: 800;
   border-radius: 50px; padding: 10px 16px; border: none; cursor: pointer;
 }
 #api-status {
-  font-size: 12px; font-weight: 700; color: var(--mauve-l);
-  text-align: center;
+  font-size: 12px; font-weight: 700; color: var(--mauve-l); text-align: center;
 }
 
 /* ── Species grid: allow more columns for 11 pets ── */
