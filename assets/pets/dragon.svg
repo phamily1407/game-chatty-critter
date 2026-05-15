@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
+  <!-- Wings -->
+  <path d="M 52 138 Q 20 110 28 78 Q 36 68 50 80 Q 46 100 56 118 Z" fill="#93D6BC"/>
+  <path d="M 148 138 Q 180 110 172 78 Q 164 68 150 80 Q 154 100 144 118 Z" fill="#93D6BC"/>
+  <!-- Wing detail lines -->
+  <path d="M 50 80 Q 40 95 46 112" stroke="#5CB89A" stroke-width="1.5" fill="none"/>
+  <path d="M 150 80 Q 160 95 154 112" stroke="#5CB89A" stroke-width="1.5" fill="none"/>
+  <!-- Body -->
+  <ellipse cx="100" cy="162" rx="50" ry="42" fill="#C8F0E0"/>
+  <!-- Belly patch -->
+  <ellipse cx="100" cy="162" rx="32" ry="28" fill="#E8F8F2"/>
+  <!-- Head -->
+  <circle cx="100" cy="88" r="52" fill="#C8F0E0"/>
+  <!-- Left horn -->
+  <path d="M 72 44 Q 64 16 76 28 Q 80 36 78 48 Z" fill="#5CB89A"/>
+  <!-- Right horn -->
+  <path d="M 128 44 Q 136 16 124 28 Q 120 36 122 48 Z" fill="#5CB89A"/>
+  <!-- Spines on top -->
+  <polygon points="93,38 97,28 101,38" fill="#5CB89A"/>
+  <polygon points="100,36 104,24 108,36" fill="#5CB89A"/>
+  <!-- Eye whites -->
+  <circle cx="80" cy="85" r="14" fill="white"/>
+  <circle cx="120" cy="85" r="14" fill="white"/>
+  <!-- Iris - confident bright green -->
+  <circle cx="80" cy="85" r="9" fill="#2E8B57"/>
+  <circle cx="120" cy="85" r="9" fill="#2E8B57"/>
+  <!-- Pupils -->
+  <circle cx="80" cy="85" r="5" fill="#0D2E1A"/>
+  <circle cx="120" cy="85" r="5" fill="#0D2E1A"/>
+  <!-- Eye shine -->
+  <circle cx="83" cy="80" r="3" fill="white"/>
+  <circle cx="123" cy="80" r="3" fill="white"/>
+  <!-- Confident eyebrows -->
+  <path d="M 68 72 Q 78 68 86 72" stroke="#5CB89A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 114 72 Q 122 68 132 72" stroke="#5CB89A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Nostrils -->
+  <ellipse cx="94" cy="104" rx="4" ry="3" fill="#93D6BC"/>
+  <ellipse cx="106" cy="104" rx="4" ry="3" fill="#93D6BC"/>
+  <!-- Smirk mouth -->
+  <path d="M 88 112 Q 100 120 114 112" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Tiny fang -->
+  <polygon points="92,113 94,120 96,113" fill="white"/>
+  <!-- Blush -->
+  <ellipse cx="68" cy="100" rx="11" ry="7" fill="#93D6BC" opacity="0.5"/>
+  <ellipse cx="132" cy="100" rx="11" ry="7" fill="#93D6BC" opacity="0.5"/>
+  <!-- Flame puff -->
+  <path d="M 160 64 Q 168 52 162 44 Q 172 48 174 40 Q 178 50 172 58 Q 176 56 177 62 Q 168 58 165 68 Z" fill="#FFB347" opacity="0.85"/>
+  <!-- Paws -->
+  <ellipse cx="76" cy="196" rx="22" ry="14" fill="#C8F0E0"/>
+  <ellipse cx="124" cy="196" rx="22" ry="14" fill="#C8F0E0"/>
+  <!-- Claws -->
+  <path d="M 67 202 Q 65 210 68 208" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 75 204 Q 73 212 76 210" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 83 202 Q 81 210 84 208" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 115 202 Q 113 210 116 208" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 123 204 Q 121 212 124 210" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 131 202 Q 129 210 132 208" stroke="#5CB89A" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

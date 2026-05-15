@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chatty Critter 🐾</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     CREATE PET SCREEN
+     ══════════════════════════════════════ -->
+<div id="create-screen" style="display:none">
+
+  <div class="create-header">
+    <div class="create-logo">Chatty Critter 🐾</div>
+    <div class="create-dots">
+      <div class="dot" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+      <div class="dot" id="dot-3"></div>
+      <div class="dot" id="dot-4"></div>
+      <div class="dot" id="dot-5"></div>
+    </div>
+  </div>
+
+  <!-- Step 1: Choose Species -->
+  <div class="create-step" id="create-step-1">
+    <h2>Choose Your Pet!</h2>
+    <p class="subtitle">Which critter calls to you? 🌟</p>
+    <div class="species-grid" id="species-grid"></div>
+  </div>
+
+  <!-- Step 2: Choose Personality -->
+  <div class="create-step" id="create-step-2">
+    <h2>Pick a Personality!</h2>
+    <p class="subtitle">How does your pet talk to the world?</p>
+    <div class="personality-grid" id="personality-grid"></div>
+  </div>
+
+  <!-- Step 3: Enter Name -->
+  <div class="create-step" id="create-step-3">
+    <h2>Give It a Name!</h2>
+    <p class="subtitle">What will you call your new friend?</p>
+    <div class="name-input-wrap">
+      <img class="name-pet-preview" id="name-pet-preview" src="" alt="pet">
+      <input type="text" id="pet-name-input" placeholder="Type a name..." maxlength="16" autocomplete="off">
+      <p class="name-hint">Up to 16 characters ✏️</p>
+    </div>
+  </div>
+
+  <!-- Step 4: Choose Color -->
+  <div class="create-step" id="create-step-4">
+    <h2>Pick a Color!</h2>
+    <p class="subtitle">Make your pet uniquely yours!</p>
+    <div class="color-picker-wrap">
+      <img id="color-preview-img" src="" alt="pet preview">
+      <p>Tap a color to try it on!</p>
+      <div id="color-picker"></div>
+    </div>
+  </div>
+
+  <!-- Step 5: Meet Your Pet -->
+  <div class="create-step" id="create-step-5">
+    <h2>Say Hello! 👋</h2>
+    <p class="subtitle">Your new friend is ready!</p>
+    <div class="pet-preview-wrap">
+      <img id="preview-pet-img" src="" alt="pet">
+      <div id="preview-name">Your Pet</div>
+      <div id="preview-species"></div>
+      <p class="preview-msg">Take care of your pet, chat with it every day, and watch your friendship grow! 💕</p>
+    </div>
+  </div>
+
+  <!-- Wizard Nav -->
+  <div class="create-nav">
+    <button class="btn-ghost" id="create-back">← Back</button>
+    <button class="btn-primary" id="create-next" disabled>Next →</button>
+  </div>
+
+</div><!-- end create-screen -->
+
+
+<!-- ══════════════════════════════════════
+     GAME CONTAINER
+     ══════════════════════════════════════ -->
+<div id="game-container" style="display:none">
+
+  <!-- ── HOME SCREEN ── -->
+  <div class="screen" id="home-screen">
+    <div class="top-bar">
+      <div class="top-title" id="home-pet-name">Critter</div>
+      <div class="coin-chip">🪙 <span class="coin-count">0</span></div>
+    </div>
+    <div class="home-pet-area">
+      <div class="home-pet-wrapper">
+        <span id="home-hat" class="outfit-overlay"></span>
+        <span id="home-accessory" class="outfit-overlay"></span>
+        <img id="home-pet-img" src="" alt="your pet">
+      </div>
+      <div class="home-mood" id="home-mood">😊 <span>Feeling great!</span></div>
+      <div class="home-level" id="home-level">Lv.1 Tiny Cub</div>
+    </div>
+    <div class="stats-panel">
+      <div class="stat-row">
+        <span class="stat-icon">😊</span>
+        <div class="stat-track"><div class="stat-fill" data-stat="happiness" style="width:80%"></div></div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-icon">🍎</span>
+        <div class="stat-track"><div class="stat-fill" data-stat="hunger" style="width:75%"></div></div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-icon">⚡</span>
+        <div class="stat-track"><div class="stat-fill" data-stat="energy" style="width:90%"></div></div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-icon">🛁</span>
+        <div class="stat-track"><div class="stat-fill" data-stat="hygiene" style="width:85%"></div></div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-icon">💖</span>
+        <div class="stat-track"><div class="stat-fill" data-stat="affection" style="width:70%"></div></div>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="openFeedModal()">
+          <span class="q-icon">🍎</span>Feed
+        </button>
+        <button class="quick-btn" onclick="bathPet()">
+          <span class="q-icon">🛁</span>Bath
+        </button>
+        <button class="quick-btn" onclick="navigate('games')">
+          <span class="q-icon">🎮</span>Play
+        </button>
+        <button class="quick-btn" onclick="navigate('chat')">
+          <span class="q-icon">💬</span>Chat
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHAT SCREEN ── -->
+  <div class="screen" id="chat-screen">
+    <div class="chat-header">
+      <img class="chat-pet-thumb" id="chat-header-img" src="" alt="pet">
+      <div class="chat-header-info">
+        <div class="chat-pet-name" id="chat-header-name">Critter</div>
+        <div class="chat-pet-mood" id="chat-header-mood">Feeling great!</div>
+      </div>
+    </div>
+    <div id="chat-log"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Say something to your pet..."
+             autocomplete="off" onkeydown="if(event.key==='Enter') handleChatSend()">
+      <button id="chat-send" onclick="handleChatSend()">➤</button>
+    </div>
+  </div>
+
+  <!-- ── GAMES SCREEN ── -->
+  <div class="screen" id="games-screen">
+    <p class="screen-title">Mini-Games 🎮</p>
+    <p class="screen-sub">Play games to earn coins and make your pet happy!</p>
+
+    <div class="game-card" onclick="openCatchBall()">
+      <div class="game-icon">🎾</div>
+      <div class="game-info">
+        <div class="game-title">Catch the Ball!</div>
+        <div class="game-desc">Tap the bouncing ball before it hits the ground. Gets faster!</div>
+        <div class="game-reward">🪙 Earn 2 coins per catch · Fills happiness</div>
+      </div>
+    </div>
+
+    <div class="game-card" onclick="openDressUp()">
+      <div class="game-icon">👗</div>
+      <div class="game-info">
+        <div class="game-title">Dress Up!</div>
+        <div class="game-desc">Pick hats, accessories, and a cool background for your pet!</div>
+        <div class="game-reward">✨ Free to use · Change anytime</div>
+      </div>
+    </div>
+
+    <div class="game-card locked">
+      <div class="game-icon">🃏</div>
+      <div class="game-info">
+        <div class="game-title">Memory Match</div>
+        <div class="game-desc">Flip cute cards and find the matching pairs!</div>
+        <div class="game-reward">🔒 Coming soon!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SHOP SCREEN ── -->
+  <div class="screen" id="shop-screen">
+    <p class="screen-title">Shop 🛍️</p>
+    <p class="screen-sub">Spend coins on tasty treats! You have <span class="coin-count">0</span> 🪙</p>
+    <div id="shop-grid"></div>
+  </div>
+
+  <!-- ── PROFILE SCREEN ── -->
+  <div class="screen" id="profile-screen">
+    <div class="profile-card">
+      <div class="profile-pet-row">
+        <img id="profile-pet-img" src="" alt="pet">
+        <div>
+          <div id="profile-name">Critter</div>
+          <div id="profile-species"></div>
+          <div id="profile-level"></div>
+          <div class="xp-bar"><div id="profile-xp-fill" style="width:0%"></div></div>
+          <div id="profile-xp-label">0 / 100 XP</div>
+        </div>
+      </div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-stats-row">
+        <div class="profile-stat">
+          <div id="profile-streak">🔥 0 days</div>
+          <div class="ps-label">Login Streak</div>
+        </div>
+        <div class="profile-stat">
+          <div id="profile-coins">🪙 0</div>
+          <div class="ps-label">Total Coins</div>
+        </div>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="confirmReset()">🗑️ Start Over (erase everything)</button>
+  </div>
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-screen="home"    onclick="navigate('home')">
+      <span class="nav-icon">🏠</span>Home
+    </button>
+    <button class="nav-btn" data-screen="chat"    onclick="navigate('chat')">
+      <span class="nav-icon">💬</span>Chat
+    </button>
+    <button class="nav-btn" data-screen="games"   onclick="navigate('games')">
+      <span class="nav-icon">🎮</span>Games
+    </button>
+    <button class="nav-btn" data-screen="shop"    onclick="navigate('shop')">
+      <span class="nav-icon">🛍️</span>Shop
+    </button>
+    <button class="nav-btn" data-screen="profile" onclick="navigate('profile')">
+      <span class="nav-icon">👤</span>Profile
+    </button>
+  </nav>
+
+  <!-- ── FEED MODAL ── -->
+  <div class="modal-overlay" id="feed-modal">
+    <div class="modal-sheet">
+      <div class="modal-close-row">
+        <button class="modal-close" onclick="closeModal('feed-modal')">✕</button>
+      </div>
+      <div class="modal-title">🍎 What would you like to feed?</div>
+      <div id="feed-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── CATCH THE BALL OVERLAY ── -->
+  <div class="game-overlay" id="catchball-overlay">
+    <div class="game-overlay-header">
+      <div class="game-overlay-title">🎾 Catch the Ball!</div>
+      <button class="game-close-btn" onclick="closeCatchBall()">✕</button>
+    </div>
+    <canvas id="catch-canvas"></canvas>
+    <!-- Game Over Panel (inside overlay) -->
+    <div class="gameover-panel" id="gameover-overlay">
+      <div class="gameover-card">
+        <h2>Nice job! 🎾</h2>
+        <div class="big-score" id="gameover-score">0</div>
+        <div style="font-size:16px;color:#8878AA;margin:6px 0">catches</div>
+        <div class="coins-earned">+<span id="gameover-coins">0</span> 🪙 coins earned!</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="play-again-btn" onclick="restartCatchBall()">Play Again</button>
+          <button class="done-btn" onclick="closeCatchBall(); navigate('home')">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DRESS UP OVERLAY ── -->
+  <div class="game-overlay" id="dressup-overlay">
+    <div class="game-overlay-header">
+      <div class="game-overlay-title">✨ Dress Up!</div>
+      <button class="game-close-btn" onclick="closeDressUp()">✕</button>
+    </div>
+    <div class="dressup-main">
+      <div class="dressup-pet-wrapper" id="dressup-pet-wrapper">
+        <span id="dressup-hat"       style="position:absolute;z-index:2;pointer-events:none;display:none;line-height:1"></span>
+        <span id="dressup-accessory" style="position:absolute;z-index:2;pointer-events:none;display:none;line-height:1"></span>
+        <img id="dressup-pet-img" src="" alt="pet">
+      </div>
+      <div id="dressup-controls"></div>
+    </div>
+  </div>
+
+</div><!-- end game-container -->
+
+
+<!-- ══ JS ══ -->
+<script src="js/storage.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/games.js"></script>
+<script src="js/main.js"></script>
+<script>
+// ── Wire up Create Wizard UI ──
+(function() {
+  // Species cards
+  const sg = document.getElementById('species-grid');
+  SPECIES.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'species-card';
+    card.dataset.id = s.id;
+    card.innerHTML = `<img src="assets/pets/${s.id}.svg" alt="${s.label}">
+      <div class="s-name">${s.label}</div>
+      <div class="s-trait">${s.trait}</div>`;
+    card.onclick = () => {
+      selectSpecies(s.id);
+      const np = document.getElementById('name-pet-preview');
+      if (np) np.src = `assets/pets/${s.id}.svg`;
+      const cp = document.getElementById('color-preview-img');
+      if (cp) { cp.src = `assets/pets/${s.id}.svg`; applyPetHue(cp, creation.colorIndex); }
+    };
+    sg.appendChild(card);
+  });
+
+  // Personality cards
+  const pg = document.getElementById('personality-grid');
+  PERSONALITIES.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'personality-card';
+    card.dataset.id = p.id;
+    card.innerHTML = `<span class="p-emoji">${p.emoji}</span>
+      <span class="p-info">
+        <span class="p-name">${p.label}</span>
+        <span class="p-desc">${p.desc}</span>
+      </span>`;
+    card.onclick = () => selectPersonality(p.id);
+    pg.appendChild(card);
+  });
+
+  // Name input
+  document.getElementById('pet-name-input').addEventListener('input', function() {
+    creation.name = this.value;
+    updateCreateNextBtn();
+  });
+
+  // Back button
+  document.getElementById('create-back').onclick = () => goCreateStep(creation.step - 1);
+})();
+
+// ── Step dot update ──
+const _goCreateStep = window.goCreateStep;
+window.goCreateStep = function(step) {
+  _goCreateStep(step);
+  for (let i = 1; i <= 5; i++) {
+    const d = document.getElementById('dot-' + i);
+    if (d) d.className = 'dot' + (i === step ? ' active' : i < step ? ' done' : '');
+  }
+};
+// Start on step 1 with dots updated
+goCreateStep(1);
+
+// ── Chat header update on navigate ──
+const _navigate = window.navigate;
+window.navigate = function(screenId) {
+  _navigate(screenId);
+  if (screenId === 'chat' && state.pet) {
+    const img = document.getElementById('chat-header-img');
+    if (img) { img.src = `assets/pets/${state.pet.species}.svg`; applyPetHue(img, state.pet.colorIndex); }
+    const n = document.getElementById('chat-header-name');
+    if (n) n.textContent = state.pet.name;
+    const m = document.getElementById('chat-header-mood');
+    if (m) { const mood = getMoodLabel(); m.textContent = mood.icon + ' ' + mood.text; }
+  }
+};
+
+// ── Restart Catch the Ball ──
+function restartCatchBall() {
+  document.getElementById('gameover-overlay').classList.remove('open');
+  if (catchBallGame) {
+    catchBallGame.score = 0;
+    catchBallGame.lives = 3;
+    catchBallGame.speed = 1;
+    catchBallGame._resetBall();
+    catchBallGame.running = true;
+    catchBallGame._loop();
+  }
+}
+</script>
+</body>
+</html>

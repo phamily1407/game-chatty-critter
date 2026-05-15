@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatty Critter — Style Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(160deg, #FFF0F8 0%, #F4F0FF 50%, #F0FFF8 100%);
+      color: #3D3550;
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .header .logo {
+      font-size: 52px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #F4A7B9, #C8A8E8, #93D6BC);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .header .tagline {
+      font-size: 18px;
+      font-weight: 600;
+      color: #8878AA;
+      margin-top: 8px;
+    }
+    .header .studio {
+      font-size: 13px;
+      font-weight: 700;
+      color: #BBAACC;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    /* ── Section ── */
+    .section { margin-bottom: 60px; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #BBAACC;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(to right, #E8D4F8, transparent);
+      border-radius: 1px;
+    }
+
+    /* ── Colors ── */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+    }
+    .color-swatch {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .swatch-block {
+      height: 80px;
+    }
+    .swatch-info {
+      background: white;
+      padding: 10px 12px;
+    }
+    .swatch-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #3D3550;
+    }
+    .swatch-hex {
+      font-size: 11px;
+      font-weight: 600;
+      color: #BBAACC;
+      margin-top: 2px;
+    }
+    .swatch-use {
+      font-size: 10px;
+      font-weight: 600;
+      color: #CCC0DC;
+      margin-top: 3px;
+    }
+
+    /* ── Typography ── */
+    .type-sample {
+      background: white;
+      border-radius: 20px;
+      padding: 28px 32px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      border-bottom: 1px solid #F4EEF8;
+      padding-bottom: 16px;
+    }
+    .type-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .type-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #CCBBDD;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      min-width: 90px;
+    }
+    .t-game-title { font-size: 38px; font-weight: 900; color: #3D3550; }
+    .t-heading    { font-size: 26px; font-weight: 800; color: #3D3550; }
+    .t-subhead    { font-size: 18px; font-weight: 700; color: #5D5070; }
+    .t-body       { font-size: 15px; font-weight: 600; color: #5D5070; }
+    .t-caption    { font-size: 12px; font-weight: 600; color: #8878AA; }
+    .t-button     {
+      font-size: 15px; font-weight: 800;
+      background: linear-gradient(135deg, #F4A7B9, #C8A8E8);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 50px;
+      display: inline-block;
+    }
+
+    /* ── Pets ── */
+    .pet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+    }
+    .pet-card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 16px 18px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      transition: transform 0.2s;
+    }
+    .pet-card:hover { transform: translateY(-4px); }
+    .pet-card img {
+      width: 120px;
+      height: 132px;
+      object-fit: contain;
+    }
+    .pet-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #3D3550;
+      margin-top: 10px;
+    }
+    .pet-trait {
+      font-size: 12px;
+      font-weight: 700;
+      color: #BBAACC;
+      margin-top: 4px;
+    }
+    .pet-desc {
+      font-size: 11px;
+      font-weight: 600;
+      color: #CCC0DC;
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+
+    /* ── UI Elements ── */
+    .ui-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+    .ui-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    .btn-primary {
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, #F4A7B9, #C8A8E8);
+      border: none;
+      border-radius: 50px;
+      padding: 14px 32px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(200,168,232,0.4);
+    }
+    .btn-secondary {
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: #8878AA;
+      background: #F4EEF8;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 28px;
+      cursor: pointer;
+    }
+    .stat-bar-demo { width: 180px; }
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .stat-icon { font-size: 16px; }
+    .stat-track {
+      flex: 1;
+      height: 10px;
+      background: #F0EAF8;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .stat-fill {
+      height: 100%;
+      border-radius: 10px;
+    }
+    .nav-demo {
+      display: flex;
+      gap: 4px;
+      background: white;
+      border-radius: 20px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      border-radius: 14px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #BBAACC;
+    }
+    .nav-item.active {
+      background: linear-gradient(135deg, #F9D0DC, #E8D4F8);
+      color: #8878AA;
+    }
+    .nav-item span { font-size: 20px; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      margin-top: 72px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #CCBBDD;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="logo">Chatty Critter</div>
+    <div class="tagline">Your pet, your personality, your story.</div>
+    <div class="studio">Hanalulu Studio · Style Guide v1.0 · 2026</div>
+  </div>
+
+  <!-- ── COLOR PALETTE ── -->
+  <div class="section">
+    <div class="section-title">Color Palette</div>
+    <div class="color-grid">
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#F9D0DC;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Rose Petal</div>
+          <div class="swatch-hex">#F9D0DC</div>
+          <div class="swatch-use">Cat · Happiness</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#FFE0C8;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Warm Peach</div>
+          <div class="swatch-hex">#FFE0C8</div>
+          <div class="swatch-use">Puppy · Feeding</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#C8F0E0;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Mint Breeze</div>
+          <div class="swatch-hex">#C8F0E0</div>
+          <div class="swatch-use">Dragon · Energy</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#E8D4F8;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Soft Lavender</div>
+          <div class="swatch-hex">#E8D4F8</div>
+          <div class="swatch-use">Bunny · Affection</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#D4EEF8;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Sky Drift</div>
+          <div class="swatch-hex">#D4EEF8</div>
+          <div class="swatch-use">Cloud Puff · Dreams</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#FFF8F0;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Cream White</div>
+          <div class="swatch-hex">#FFF8F0</div>
+          <div class="swatch-use">Background · Cards</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#3D3550;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Deep Plum</div>
+          <div class="swatch-hex">#3D3550</div>
+          <div class="swatch-use">Main Text</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#8878AA;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Misty Mauve</div>
+          <div class="swatch-hex">#8878AA</div>
+          <div class="swatch-use">Subtitles · Icons</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── TYPOGRAPHY ── -->
+  <div class="section">
+    <div class="section-title">Typography — Nunito (Google Fonts)</div>
+    <div class="type-sample">
+      <div class="type-row">
+        <span class="type-label">Game Title</span>
+        <span class="t-game-title">Chatty Critter</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Heading</span>
+        <span class="t-heading">Choose Your Pet!</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Subheading</span>
+        <span class="t-subhead">Mochi is feeling happy today</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Body</span>
+        <span class="t-body">Your pet replies in its own special voice. Type a message to say hello!</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Caption</span>
+        <span class="t-caption">Happiness · Hunger · Energy · Hygiene · Affection</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Button</span>
+        <span class="t-button">Start Playing!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PET CHARACTERS ── -->
+  <div class="section">
+    <div class="section-title">Pet Characters</div>
+    <div class="pet-grid">
+
+      <div class="pet-card">
+        <img src="assets/pets/cat.svg" alt="Cat">
+        <div class="pet-name">Cat</div>
+        <div class="pet-trait">Clever &amp; Mysterious</div>
+        <div class="pet-desc">Sharp eyes, quick wit, always up to something</div>
+      </div>
+
+      <div class="pet-card">
+        <img src="assets/pets/puppy.svg" alt="Puppy">
+        <div class="pet-name">Puppy</div>
+        <div class="pet-trait">Bouncy &amp; Loyal</div>
+        <div class="pet-desc">Best friend forever, always ready to play</div>
+      </div>
+
+      <div class="pet-card">
+        <img src="assets/pets/dragon.svg" alt="Dragon">
+        <div class="pet-name">Dragon</div>
+        <div class="pet-trait">Brave &amp; Dramatic</div>
+        <div class="pet-desc">Hero of every adventure, big heart, tiny flames</div>
+      </div>
+
+      <div class="pet-card">
+        <img src="assets/pets/bunny.svg" alt="Bunny">
+        <div class="pet-name">Bunny</div>
+        <div class="pet-trait">Shy but Sweet</div>
+        <div class="pet-desc">Soft-spoken, kind, loves warm hugs</div>
+      </div>
+
+      <div class="pet-card">
+        <img src="assets/pets/cloud-puff.svg" alt="Cloud Puff">
+        <div class="pet-name">Cloud Puff</div>
+        <div class="pet-trait">Dreamy &amp; Magical</div>
+        <div class="pet-desc">Floats through life, leaves sparkles everywhere</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── UI ELEMENTS ── -->
+  <div class="section">
+    <div class="section-title">UI Elements</div>
+    <div class="ui-grid">
+
+      <div class="ui-card">
+        <p style="font-size:12px;font-weight:700;color:#BBAACC;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Buttons</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn-primary">Feed Mochi!</button>
+          <button class="btn-secondary">Maybe Later</button>
+        </div>
+      </div>
+
+      <div class="ui-card">
+        <p style="font-size:12px;font-weight:700;color:#BBAACC;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Stat Bars</p>
+        <div class="stat-bar-demo">
+          <div class="stat-row">
+            <span class="stat-icon">😊</span>
+            <div class="stat-track"><div class="stat-fill" style="width:85%;background:linear-gradient(to right,#F4A7B9,#F9D0DC);"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-icon">🍎</span>
+            <div class="stat-track"><div class="stat-fill" style="width:40%;background:linear-gradient(to right,#FFBF96,#FFE0C8);"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-icon">⚡</span>
+            <div class="stat-track"><div class="stat-fill" style="width:70%;background:linear-gradient(to right,#93D6BC,#C8F0E0);"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-icon">🛁</span>
+            <div class="stat-track"><div class="stat-fill" style="width:90%;background:linear-gradient(to right,#C8A8E8,#E8D4F8);"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-icon">💖</span>
+            <div class="stat-track"><div class="stat-fill" style="width:60%;background:linear-gradient(to right,#A8D4EC,#D4EEF8);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui-card">
+        <p style="font-size:12px;font-weight:700;color:#BBAACC;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Navigation</p>
+        <div class="nav-demo">
+          <div class="nav-item active">
+            <span>🏠</span>Home
+          </div>
+          <div class="nav-item">
+            <span>💬</span>Chat
+          </div>
+          <div class="nav-item">
+            <span>🎮</span>Games
+          </div>
+          <div class="nav-item">
+            <span>🛍️</span>Shop
+          </div>
+          <div class="nav-item">
+            <span>👤</span>Profile
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    Made with love by Hanalulu Studio &nbsp;🌺&nbsp; Milestone 1 Complete
+  </div>
+
+</div>
+</body>
+</html>
