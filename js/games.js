@@ -1,118 +1,175 @@
 // ══ Dress Up Data ══
+// Positions calibrated for 240×264px wrapper.
+// Head top ≈ top:16%, eyes ≈ top:38%, body center ≈ top:72%, feet ≈ top:88%
+// Center X of 240px wrapper = 120px → for a 48px emoji: left = (120-24)/240 = 40%
 const DRESS_UP_ITEMS = {
+
+  // ── 🎩 Hats (10) — sits on head, centered ──────────────────
   hat: [
-    { id: 'tophat',    emoji: '🎩', name: 'Top Hat',    top: '8%',  left: '28%', size: '2.8rem' },
-    { id: 'crown',     emoji: '👑', name: 'Crown',      top: '9%',  left: '30%', size: '2.5rem' },
-    { id: 'wizard',    emoji: '🪄', name: 'Wizard Hat', top: '5%',  left: '25%', size: '3rem'   },
-    { id: 'cowboy',    emoji: '🤠', name: 'Cowboy',     top: '8%',  left: '27%', size: '2.8rem' },
-    { id: 'halo',      emoji: '😇', name: 'Halo',       top: '10%', left: '32%', size: '2.2rem' },
-    { id: 'cap',       emoji: '🧢', name: 'Cap',        top: '10%', left: '28%', size: '2.6rem' },
+    { id: 'tophat',       emoji: '🎩', name: 'Top Hat',       top: '10%', left: '37%', size: '3rem'   },
+    { id: 'crown',        emoji: '👑', name: 'Crown',         top: '11%', left: '38%', size: '2.8rem' },
+    { id: 'wizard',       emoji: '🪄', name: 'Wizard Hat',    top:  '6%', left: '35%', size: '3.2rem' },
+    { id: 'cowboy',       emoji: '🤠', name: 'Cowboy',        top: '10%', left: '36%', size: '3rem'   },
+    { id: 'halo',         emoji: '😇', name: 'Halo',          top:  '8%', left: '39%', size: '2.5rem' },
+    { id: 'cap',          emoji: '🧢', name: 'Cap',           top: '12%', left: '37%', size: '2.8rem' },
+    { id: 'flower-crown', emoji: '🌸', name: 'Flower Crown',  top:  '9%', left: '35%', size: '3.2rem' },
+    { id: 'party-hat',    emoji: '🎉', name: 'Party Hat',     top:  '5%', left: '37%', size: '3.4rem' },
+    { id: 'bunny-ears',   emoji: '🐰', name: 'Bunny Ears',    top:  '4%', left: '35%', size: '3.2rem' },
+    { id: 'chef-hat',     emoji: '👨‍🍳', name: 'Chef Hat',      top:  '8%', left: '35%', size: '3rem'   },
   ],
+
+  // ── ✨ Accessories (10) — face/body detail items ────────────
   accessory: [
-    { id: 'bow',       emoji: '🎀', name: 'Big Bow',    top: '14%', left: '62%', size: '2rem'   },
-    { id: 'glasses',   emoji: '🕶️', name: 'Cool Shades',top: '30%', left: '22%', size: '2.4rem' },
-    { id: 'flower',    emoji: '🌸', name: 'Flower',     top: '12%', left: '60%', size: '1.8rem' },
-    { id: 'star',      emoji: '⭐', name: 'Star Pin',   top: '50%', left: '65%', size: '1.8rem' },
-    { id: 'rainbow',   emoji: '🌈', name: 'Rainbow',    top: '60%', left: '10%', size: '2.2rem' },
-    { id: 'heart',     emoji: '💖', name: 'Heart',      top: '48%', left: '63%', size: '1.8rem' },
+    { id: 'bow',          emoji: '🎀', name: 'Big Bow',       top: '16%', left: '58%', size: '2.4rem' },
+    { id: 'glasses',      emoji: '🕶️', name: 'Cool Shades',   top: '35%', left: '28%', size: '3rem'   },
+    { id: 'flower-acc',   emoji: '🌺', name: 'Flower',        top: '14%', left: '56%', size: '2.2rem' },
+    { id: 'star',         emoji: '⭐', name: 'Star Pin',      top: '52%', left: '62%', size: '2.2rem' },
+    { id: 'rainbow-acc',  emoji: '🌈', name: 'Rainbow',       top: '62%', left: '20%', size: '2.6rem' },
+    { id: 'heart',        emoji: '💖', name: 'Heart',         top: '50%', left: '60%', size: '2.2rem' },
+    { id: 'monocle',      emoji: '🧐', name: 'Monocle',       top: '33%', left: '56%', size: '2.2rem' },
+    { id: 'mic',          emoji: '🎤', name: 'Microphone',    top: '56%', left: '14%', size: '2.6rem' },
+    { id: 'balloon',      emoji: '🎈', name: 'Balloon',       top:  '4%', left: '58%', size: '2.8rem' },
+    { id: 'wand',         emoji: '🪄', name: 'Magic Wand',    top: '52%', left: '12%', size: '2.8rem' },
   ],
+
+  // ── 🧚 Wings & Back (6) — appear behind pet (z-index: 0) ───
+  wings: [
+    { id: 'fairy',        emoji: '🧚', name: 'Fairy Wings',   top: '28%', left: '15%', size: '6rem',  back: true },
+    { id: 'butterfly',    emoji: '🦋', name: 'Butterfly',     top: '32%', left: '18%', size: '5.5rem',back: true },
+    { id: 'angel',        emoji: '👼', name: 'Angel Wings',   top: '25%', left: '12%', size: '6.5rem',back: true },
+    { id: 'devil',        emoji: '😈', name: 'Devil Wings',   top: '26%', left: '14%', size: '6rem',  back: true },
+    { id: 'dragon-wings', emoji: '🐲', name: 'Dragon Wings',  top: '30%', left: '10%', size: '7rem',  back: true },
+    { id: 'hero-cape',    emoji: '🦸', name: 'Hero Cape',     top: '48%', left:  '8%', size: '7rem',  back: true },
+  ],
+
+  // ── 👟 Footwear (6) — bottom of pet ──────────────────────
+  feet: [
+    { id: 'sneakers',     emoji: '👟', name: 'Sneakers',      top: '86%', left: '28%', size: '3rem'   },
+    { id: 'boots',        emoji: '🥾', name: 'Boots',         top: '86%', left: '29%', size: '3.2rem' },
+    { id: 'ballet',       emoji: '🩰', name: 'Ballet',        top: '87%', left: '30%', size: '2.8rem' },
+    { id: 'roller',       emoji: '🛼', name: 'Roller Skates', top: '86%', left: '27%', size: '3.2rem' },
+    { id: 'flip-flops',   emoji: '🩴', name: 'Flip Flops',   top: '88%', left: '30%', size: '2.8rem' },
+    { id: 'socks',        emoji: '🧦', name: 'Cozy Socks',   top: '84%', left: '28%', size: '3rem'   },
+  ],
+
+  // ── 🧣 Wraps & Body (5) — mid-body items ─────────────────
+  wrap: [
+    { id: 'scarf',        emoji: '🧣', name: 'Cozy Scarf',   top: '45%', left: '36%', size: '3.4rem' },
+    { id: 'bow-tie',      emoji: '🎀', name: 'Bow Tie',      top: '48%', left: '40%', size: '2.6rem' },
+    { id: 'lei',          emoji: '🪷', name: 'Island Lei',   top: '46%', left: '34%', size: '3.8rem' },
+    { id: 'necklace',     emoji: '📿', name: 'Necklace',     top: '44%', left: '39%', size: '2.6rem' },
+    { id: 'sweater',      emoji: '🧶', name: 'Knit Wrap',    top: '57%', left: '34%', size: '4.5rem' },
+  ],
+
+  // ── 🌈 Backgrounds (14) ────────────────────────────────────
   bg: [
-    { id: 'none',   emoji: '⬜', name: 'Plain',    gradient: 'linear-gradient(160deg,#FFF0F8,#F4F0FF)'  },
-    { id: 'sunny',  emoji: '☀️', name: 'Sunny Day', gradient: 'linear-gradient(160deg,#FFFDE0,#FFE08A)'  },
-    { id: 'night',  emoji: '🌙', name: 'Night Sky', gradient: 'linear-gradient(160deg,#1A1040,#3A2880)'  },
-    { id: 'garden', emoji: '🌺', name: 'Garden',    gradient: 'linear-gradient(160deg,#D4F8D4,#A8E8A8)'  },
-    { id: 'ocean',  emoji: '🌊', name: 'Ocean',     gradient: 'linear-gradient(160deg,#D0F0FF,#80C8F0)'  },
-    { id: 'space',  emoji: '🚀', name: 'Space',     gradient: 'linear-gradient(160deg,#0D0828,#2A0F5C)'  },
-  ]
+    { id: 'none',    emoji: '⬜', name: 'Plain',          gradient: 'linear-gradient(160deg,#FFF0F8,#F4F0FF)'                    },
+    { id: 'sunny',   emoji: '☀️', name: 'Sunny Day',      gradient: 'linear-gradient(160deg,#FFFDE0,#FFE08A)'                    },
+    { id: 'night',   emoji: '🌙', name: 'Night Sky',      gradient: 'linear-gradient(160deg,#1A1040,#3A2880)'                    },
+    { id: 'garden',  emoji: '🌷', name: 'Garden',         gradient: 'linear-gradient(160deg,#D4F8D4,#A8E8A8)'                    },
+    { id: 'ocean',   emoji: '🌊', name: 'Ocean',          gradient: 'linear-gradient(160deg,#D0F0FF,#80C8F0)'                    },
+    { id: 'space',   emoji: '🚀', name: 'Space',          gradient: 'linear-gradient(160deg,#0D0828,#2A0F5C)'                    },
+    { id: 'autumn',  emoji: '🍂', name: 'Autumn',         gradient: 'linear-gradient(160deg,#FFD4A3,#E8A852)'                    },
+    { id: 'sunset',  emoji: '🌅', name: 'Sunset',         gradient: 'linear-gradient(160deg,#FF7E5F,#FEB462)'                    },
+    { id: 'rainbow', emoji: '🌈', name: 'Rainbow',        gradient: 'linear-gradient(135deg,#FFB3C6,#FFD4A3,#FFFF9A,#C3F7C3,#A3D8FF,#D4A8F0)' },
+    { id: 'snow',    emoji: '❄️', name: 'Snowy',          gradient: 'linear-gradient(160deg,#E8F4FF,#FFFFFF)'                    },
+    { id: 'sakura',  emoji: '🌸', name: 'Cherry Blossom', gradient: 'linear-gradient(160deg,#FFD6E8,#FFB3D9)'                    },
+    { id: 'volcano', emoji: '🌋', name: 'Volcano',        gradient: 'linear-gradient(160deg,#4A0000,#8B1A1A)'                    },
+    { id: 'beach',   emoji: '🏖️', name: 'Beach',          gradient: 'linear-gradient(180deg,#87CEEB 0%,#87CEEB 45%,#F4D03F 45%,#F5CBA7 100%)' },
+    { id: 'clouds',  emoji: '☁️', name: 'Cloud Kingdom',  gradient: 'linear-gradient(160deg,#C8E6F5,#F0F8FF)'                    },
+  ],
 };
+
+// Category config — tab label, icon, outfit key
+const DRESSUP_CATEGORIES = [
+  { key: 'hat',       label: 'Hats',       icon: '🎩', outfitKey: 'hat'       },
+  { key: 'accessory', label: 'Extras',     icon: '✨', outfitKey: 'accessory' },
+  { key: 'wings',     label: 'Wings',      icon: '🧚', outfitKey: 'wings'     },
+  { key: 'feet',      label: 'Footwear',   icon: '👟', outfitKey: 'feet'      },
+  { key: 'wrap',      label: 'Wraps',      icon: '🧣', outfitKey: 'wrap'      },
+  { key: 'bg',        label: 'Background', icon: '🌈', outfitKey: 'bgId'      },
+];
 
 // ══ Dress Up ══
 function initDressUp(containerId, _petImgEl, currentOutfit, onSave) {
   const container = document.getElementById(containerId);
   if (!container) return null;
 
+  // Normalise outfit — include all slots
   let outfit = {
     hat:       currentOutfit.hat       || null,
     accessory: currentOutfit.accessory || null,
+    wings:     currentOutfit.wings     || null,
+    feet:      currentOutfit.feet      || null,
+    wrap:      currentOutfit.wrap      || null,
     bgId:      currentOutfit.bgId      || 'none',
   };
   let activeCategory = 'hat';
 
-  function getOverlayEls() {
-    return {
-      hatEl:     document.getElementById('dressup-hat'),
-      accEl:     document.getElementById('dressup-accessory'),
-      wrapperEl: document.getElementById('dressup-pet-wrapper'),
-    };
+  // ── Apply outfit to all overlay spans ──────────────────────
+  function applyOverlay(spanId, items, currentId) {
+    const span = document.getElementById(spanId);
+    if (!span) return;
+    const item = items.find(i => i.id === currentId);
+    if (item) {
+      Object.assign(span.style, {
+        display: 'block', top: item.top, left: item.left, fontSize: item.size,
+        zIndex: item.back ? '0' : '3',
+      });
+      span.textContent = item.emoji;
+    } else {
+      span.style.display = 'none';
+    }
   }
 
   function applyOutfit() {
-    const { hatEl, accEl, wrapperEl } = getOverlayEls();
-
-    // Hat
-    if (hatEl) {
-      const item = DRESS_UP_ITEMS.hat.find(i => i.id === outfit.hat);
-      if (item) {
-        Object.assign(hatEl.style, {
-          display: 'block', top: item.top, left: item.left, fontSize: item.size
-        });
-        hatEl.textContent = item.emoji;
-      } else {
-        hatEl.style.display = 'none';
-      }
-    }
-
-    // Accessory
-    if (accEl) {
-      const item = DRESS_UP_ITEMS.accessory.find(i => i.id === outfit.accessory);
-      if (item) {
-        Object.assign(accEl.style, {
-          display: 'block', top: item.top, left: item.left, fontSize: item.size
-        });
-        accEl.textContent = item.emoji;
-      } else {
-        accEl.style.display = 'none';
-      }
-    }
+    applyOverlay('dressup-hat',       DRESS_UP_ITEMS.hat,       outfit.hat);
+    applyOverlay('dressup-accessory', DRESS_UP_ITEMS.accessory, outfit.accessory);
+    applyOverlay('dressup-wings',     DRESS_UP_ITEMS.wings,     outfit.wings);
+    applyOverlay('dressup-feet',      DRESS_UP_ITEMS.feet,      outfit.feet);
+    applyOverlay('dressup-wrap',      DRESS_UP_ITEMS.wrap,      outfit.wrap);
 
     // Background
-    if (wrapperEl) {
-      const bgItem = DRESS_UP_ITEMS.bg.find(i => i.id === outfit.bgId) || DRESS_UP_ITEMS.bg[0];
-      wrapperEl.style.background = bgItem.gradient;
+    const wrapper = document.getElementById('dressup-pet-wrapper');
+    if (wrapper) {
+      const bg = DRESS_UP_ITEMS.bg.find(i => i.id === outfit.bgId) || DRESS_UP_ITEMS.bg[0];
+      wrapper.style.background = bg.gradient;
     }
   }
 
+  // ── Render controls ────────────────────────────────────────
   function render() {
     container.innerHTML = '';
 
-    // Category tabs
-    const tabs = document.createElement('div');
-    tabs.className = 'dressup-tabs';
-    [['hat','🎩 Hats'], ['accessory','✨ Extras'], ['bg','🌈 Backgrounds']].forEach(([cat, label]) => {
+    // Scrollable tab row
+    const tabRow = document.createElement('div');
+    tabRow.className = 'dressup-tabs';
+    DRESSUP_CATEGORIES.forEach(cat => {
       const tab = document.createElement('button');
-      tab.className = 'dressup-tab' + (cat === activeCategory ? ' active' : '');
-      tab.textContent = label;
-      tab.onclick = () => { activeCategory = cat; render(); };
-      tabs.appendChild(tab);
+      tab.className = 'dressup-tab' + (cat.key === activeCategory ? ' active' : '');
+      tab.innerHTML = `<span>${cat.icon}</span><span>${cat.label}</span>`;
+      tab.onclick = () => { activeCategory = cat.key; render(); };
+      tabRow.appendChild(tab);
     });
-    container.appendChild(tabs);
+    container.appendChild(tabRow);
 
     // Item grid
+    const catCfg = DRESSUP_CATEGORIES.find(c => c.key === activeCategory);
+    const items  = DRESS_UP_ITEMS[activeCategory] || [];
+    const outfitKey = catCfg.outfitKey;
+
     const grid = document.createElement('div');
     grid.className = 'dressup-grid';
-    DRESS_UP_ITEMS[activeCategory].forEach(item => {
-      const key = activeCategory === 'bg' ? 'bgId' : activeCategory;
-      const isEquipped = outfit[key] === item.id;
+    items.forEach(item => {
+      const isEquipped = outfit[outfitKey] === item.id;
       const btn = document.createElement('button');
       btn.className = 'dressup-item' + (isEquipped ? ' equipped' : '');
+      btn.title = item.name;
       btn.innerHTML = `<span class="item-emoji">${item.emoji}</span><span class="item-name">${item.name}</span>`;
       btn.onclick = () => {
-        // Toggle off if already equipped; 'none' is always the unequip value for bg
-        if (isEquipped) {
-          outfit[key] = activeCategory === 'bg' ? 'none' : null;
-        } else {
-          outfit[key] = item.id;
-        }
+        outfit[outfitKey] = isEquipped
+          ? (activeCategory === 'bg' ? 'none' : null)
+          : item.id;
         applyOutfit();
         render();
       };
@@ -120,36 +177,31 @@ function initDressUp(containerId, _petImgEl, currentOutfit, onSave) {
     });
     container.appendChild(grid);
 
-    // Action buttons
-    const btns = document.createElement('div');
-    btns.style.cssText = 'display:flex;gap:10px;margin-top:8px;';
+    // Bottom action row
+    const actions = document.createElement('div');
+    actions.className = 'dressup-actions';
 
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn-primary dressup-save';
-    saveBtn.style.flex = '1';
     saveBtn.textContent = '💾 Save Look!';
-    saveBtn.onclick = () => {
-      if (typeof onSave === 'function') onSave({ ...outfit });
-    };
+    saveBtn.onclick = () => { if (typeof onSave === 'function') onSave({ ...outfit }); };
 
     const clearBtn = document.createElement('button');
-    clearBtn.style.cssText = 'flex:1;padding:10px;border-radius:50px;font-family:var(--font);font-size:14px;font-weight:800;color:var(--mauve);background:var(--mauve-ll);border:none;cursor:pointer;';
+    clearBtn.className = 'dressup-clear-btn';
     clearBtn.textContent = '🗑️ Clear All';
     clearBtn.onclick = () => {
-      outfit = { hat: null, accessory: null, bgId: 'none' };
+      outfit = { hat: null, accessory: null, wings: null, feet: null, wrap: null, bgId: 'none' };
       applyOutfit();
       render();
     };
 
-    btns.appendChild(saveBtn);
-    btns.appendChild(clearBtn);
-    container.appendChild(btns);
+    actions.appendChild(saveBtn);
+    actions.appendChild(clearBtn);
+    container.appendChild(actions);
   }
 
-  // Init: apply current outfit then render controls
   applyOutfit();
   render();
-
   return { getOutfit: () => ({ ...outfit }), applyOutfit };
 }
 

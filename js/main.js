@@ -247,7 +247,7 @@ function finishCreation() {
   state.level      = 1;
   state.streak     = { count: 1, lastLogin: todayKey() };
   state.chatHistory = [];
-  state.outfit      = { hat: null, accessory: null, bgId: 'none' };
+  state.outfit      = { hat: null, accessory: null, wings: null, feet: null, wrap: null, bgId: 'none' };
   state.inventory   = { apple: 3, fish: 1, cake: 0, sushi: 0, smoothie: 0, mystery: 0, donut: 0, croissant: 0 };
   state.petMemories = [];
   state.dailyDeal   = { date: null, itemId: null, salePrice: 0, purchased: 0 };
@@ -399,26 +399,34 @@ function updateMoodExpression() {
 }
 
 function applyOutfitToHome() {
-  const hatEl    = el('home-hat');
-  const accEl    = el('home-accessory');
-  const wrapper  = document.querySelector('.home-pet-wrapper');
-  if (hatEl) {
-    const item = DRESS_UP_ITEMS.hat.find(i => i.id === state.outfit.hat);
+  const outfit  = state.outfit || {};
+  const wrapper = document.querySelector('.home-pet-wrapper');
+
+  // Helper: apply one overlay span
+  function _applySpan(spanId, items, currentId, isBehind) {
+    const span = el(spanId);
+    if (!span) return;
+    const item = items?.find(i => i.id === currentId);
     if (item) {
-      Object.assign(hatEl.style, { display:'block', top:item.top, left:item.left, fontSize:item.size });
-      hatEl.textContent = item.emoji;
-    } else { hatEl.style.display = 'none'; }
+      Object.assign(span.style, {
+        display: 'block', top: item.top, left: item.left, fontSize: item.size,
+        zIndex: isBehind ? '0' : '3',
+      });
+      span.textContent = item.emoji;
+    } else {
+      span.style.display = 'none';
+    }
   }
-  if (accEl) {
-    const item = DRESS_UP_ITEMS.accessory.find(i => i.id === state.outfit.accessory);
-    if (item) {
-      Object.assign(accEl.style, { display:'block', top:item.top, left:item.left, fontSize:item.size });
-      accEl.textContent = item.emoji;
-    } else { accEl.style.display = 'none'; }
-  }
-  if (wrapper && state.outfit.bgId) {
-    const bgItem = DRESS_UP_ITEMS.bg.find(i => i.id === state.outfit.bgId);
-    wrapper.style.background = bgItem ? bgItem.gradient : '';
+
+  _applySpan('home-wings',     DRESS_UP_ITEMS.wings,     outfit.wings,     true);
+  _applySpan('home-hat',       DRESS_UP_ITEMS.hat,       outfit.hat,       false);
+  _applySpan('home-accessory', DRESS_UP_ITEMS.accessory, outfit.accessory, false);
+  _applySpan('home-feet',      DRESS_UP_ITEMS.feet,      outfit.feet,      false);
+  _applySpan('home-wrap',      DRESS_UP_ITEMS.wrap,      outfit.wrap,      false);
+
+  if (wrapper) {
+    const bg = DRESS_UP_ITEMS.bg.find(i => i.id === outfit.bgId);
+    wrapper.style.background = bg ? bg.gradient : '';
   }
 }
 
@@ -705,15 +713,36 @@ function openDressUp() {
   const petImg = el('dressup-pet-img');
   petImg.src = `assets/pets/${state.pet.species}.svg`;
   applyPetHue(petImg, state.pet.colorIndex);
-  dressUpController = initDressUp('dressup-controls', petImg, { ...state.outfit }, (newOutfit) => {
+  // Ensure all outfit keys exist before spreading
+  const fullOutfit = {
+    hat: null, accessory: null, wings: null, feet: null, wrap: null, bgId: 'none',
+    ...(state.outfit || {}),
+  };
+  dressUpController = initDressUp('dressup-controls', petImg, fullOutfit, (newOutfit) => {
     state.outfit = { ...newOutfit };
-    state.stats.affection = Math.min(100, state.stats.affection + 4); // M2
+    state.stats.affection = Math.min(100, state.stats.affection + 4);
     updateHomeScreen();
     saveGame(state);
-    showToast('Outfit saved! Looking fabulous! ✨');
+    showToast('Outfit saved! Looking amazing! ✨');
+    if (typeof playMatch === 'function') playMatch();
   });
 }
-function closeDressUp() { el('dressup-overlay').classList.remove('open'); dressUpController = null; }
+function closeDressUp() {
+  el('dressup-overlay').classList.remove('open');
+  dressUpController = null;
+  _dressUpBig = false; // reset size on close
+  el('dressup-overlay')?.classList.remove('dressup-xl');
+}
+
+// Pet size toggle in dress-up
+let _dressUpBig = false;
+function toggleDressUpSize() {
+  _dressUpBig = !_dressUpBig;
+  const overlay = el('dressup-overlay');
+  overlay.classList.toggle('dressup-xl', _dressUpBig);
+  const btn = el('dressup-size-btn');
+  if (btn) btn.textContent = _dressUpBig ? '🔽 Normal' : '🔍 Bigger';
+}
 
 // M4: Memory Match — single source of truth, no duplicate in index.html
 let _mmLocked = false; // prevent double-tap race condition

@@ -78,11 +78,17 @@
     </div>
     <div class="home-pet-area">
       <div class="home-pet-wrapper">
-        <span id="home-hat" class="outfit-overlay"></span>
-        <span id="home-accessory" class="outfit-overlay"></span>
-        <img id="home-pet-img" src="" alt="your pet" onclick="tapPet()" style="cursor:pointer" title="Tap me!">
+        <!-- Wings behind pet -->
+        <span id="home-wings"     style="position:absolute;z-index:0;pointer-events:none;display:none;line-height:1"></span>
+        <!-- Pet -->
+        <img id="home-pet-img" src="" alt="your pet" onclick="tapPet()" style="cursor:pointer;position:relative;z-index:1" title="Tap me!">
+        <!-- Items in front -->
+        <span id="home-hat"       style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
+        <span id="home-accessory" style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
+        <span id="home-feet"      style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
+        <span id="home-wrap"      style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
         <!-- M3: mood expression overlay -->
-        <span id="mood-expression" class="mood-expression"></span>
+        <span id="mood-expression" class="mood-expression" style="z-index:4"></span>
       </div>
       <div class="home-mood" id="home-mood">😊 <span>Feeling great!</span></div>
       <div class="home-level" id="home-level">Lv.1 Tiny Cub</div>
@@ -288,13 +294,22 @@
   <div class="game-overlay" id="dressup-overlay">
     <div class="game-overlay-header">
       <div class="game-overlay-title">✨ Dress Up!</div>
-      <button class="game-close-btn" onclick="closeDressUp()">✕</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button id="dressup-size-btn" class="dressup-size-toggle" onclick="toggleDressUpSize()" title="Toggle pet size">🔍 Bigger</button>
+        <button class="game-close-btn" onclick="closeDressUp()">✕</button>
+      </div>
     </div>
     <div class="dressup-main">
       <div class="dressup-pet-wrapper" id="dressup-pet-wrapper">
-        <span id="dressup-hat"       style="position:absolute;z-index:2;pointer-events:none;display:none;line-height:1"></span>
-        <span id="dressup-accessory" style="position:absolute;z-index:2;pointer-events:none;display:none;line-height:1"></span>
+        <!-- Wings behind pet (z-index 0) -->
+        <span id="dressup-wings"     style="position:absolute;z-index:0;pointer-events:none;display:none;line-height:1"></span>
+        <!-- Pet image -->
         <img id="dressup-pet-img" src="" alt="pet">
+        <!-- Items in front of pet (z-index 3) -->
+        <span id="dressup-hat"       style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
+        <span id="dressup-accessory" style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
+        <span id="dressup-feet"      style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
+        <span id="dressup-wrap"      style="position:absolute;z-index:3;pointer-events:none;display:none;line-height:1"></span>
       </div>
       <div id="dressup-controls"></div>
     </div>

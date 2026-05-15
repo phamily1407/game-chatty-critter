@@ -8,7 +8,7 @@ const DEFAULT_STATE = {
   level:    1,
   streak:   { count: 0, lastLogin: null },
   chatHistory: [],
-  outfit:   { hat: null, accessory: null, bgId: 'none' },
+  outfit:   { hat: null, accessory: null, wings: null, feet: null, wrap: null, bgId: 'none' },
   // M1 fix: mystery: 0 added; shopUnlocked removed (was unused)
   inventory: { apple: 3, fish: 1, cake: 0, sushi: 0, smoothie: 0, mystery: 0, donut: 0, croissant: 0 },
   // M5: chat topic memories
