@@ -17,6 +17,12 @@ const DEFAULT_STATE = {
   dailyDeal: { date: null, itemId: null, salePrice: 0, purchased: 0 },
   // daily challenges
   dailyChallenges: { date: null, challenges: [] },
+  // achievement system
+  achievements: {},        // { achievementId: true }
+  lifetimeStats: {
+    chatCount: 0, catchCount: 0, mmCount: 0,
+    shopCount: 0, hugCount: 0, totalCoinsEarned: 0, outfitItemCount: 0,
+  },
   // M2: bond/affection tracking
   friendsSince:      null,
   lastHighAffection: null,

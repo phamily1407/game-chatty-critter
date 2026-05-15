@@ -51,40 +51,43 @@ async function getAIResponse(userMessage, chatHistory, pet, stats) {
   }
 }
 
+// B5 fix: wrap every fetch with a 12-second AbortController timeout
+function _timedFetch(url, options, timeoutMs = 12000) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: ctrl.signal })
+    .finally(() => clearTimeout(tid));
+}
+
 // ── Groq (OpenAI-compatible, Llama 3.1 8B Instant) ──
 async function _callGroq(apiKey, system, history, userMessage) {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const res = await _timedFetch('https://api.groq.com/openai/v1/chat/completions', {
     method:  'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
     body: JSON.stringify({
-      model:       'llama-3.1-8b-instant',
+      model: 'llama-3.1-8b-instant',
       messages: [
         { role: 'system', content: system },
         ...history,
         { role: 'user',   content: userMessage },
       ],
-      max_tokens:  120,
-      temperature: 0.88,
+      max_tokens: 120, temperature: 0.88,
     }),
   });
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Groq ${res.status}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content?.trim() || null;
 }
 
 // ── Google Gemini 1.5 Flash ──
 async function _callGemini(apiKey, system, history, userMessage) {
-  // Convert OpenAI-style history to Gemini's role format
   const contents = history.map(m => ({
-    role:  m.role === 'assistant' ? 'model' : 'user',
+    role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }));
   contents.push({ role: 'user', parts: [{ text: userMessage }] });
 
-  const res = await fetch(
+  const res = await _timedFetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     {
       method:  'POST',
@@ -102,14 +105,14 @@ async function _callGemini(apiKey, system, history, userMessage) {
       }),
     }
   );
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini ${res.status}`);
   const data = await res.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
 }
 
 // ── Abacus.ai ──
 async function _callAbacus(apiKey, system, history, userMessage) {
-  const res = await fetch('https://api.abacus.ai/api/v0/llm/chat', {
+  const res = await _timedFetch('https://api.abacus.ai/api/v0/llm/chat', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json', 'apiKey': apiKey },
     body: JSON.stringify({
@@ -120,7 +123,7 @@ async function _callAbacus(apiKey, system, history, userMessage) {
       ],
     }),
   });
-  if (!res.ok) throw new Error(`Abacus ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Abacus ${res.status}`);
   const data = await res.json();
   return (data.response || data.message || data.choices?.[0]?.message?.content || '').trim() || null;
 }

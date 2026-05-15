@@ -53,9 +53,11 @@ const FOOD_ITEMS = {
   croissant:{ label: 'Magic Croissant',emoji: '🥐', price: 40, hunger: 28, happiness: 15, energy: 30, affection: 5 }, // M6 new
 };
 
-const XP_PER_LEVEL  = [0, 100, 200, 350, 500, 700, 1000, 1400, 2000];
+// B4 fix: XP_PER_LEVEL[9] was undefined — Level 10 unreachable
+const XP_PER_LEVEL  = [0, 100, 200, 350, 500, 700, 1000, 1400, 2000, 2800];
 const LEVEL_NAMES   = ['', 'Tiny Cub', 'Cozy Cub', 'Adventure Pal', 'Star Buddy',
-                        'Super Friend', 'Bright Spirit', 'Legendary Floof', 'Cosmic Legend', 'Eternal Sparkle'];
+                        'Super Friend', 'Bright Spirit', 'Legendary Floof', 'Cosmic Legend',
+                        'Eternal Sparkle', 'Mythic Guardian'];
 
 // M2: rewards unlocked per level
 const LEVEL_REWARDS = {
@@ -66,15 +68,27 @@ const LEVEL_REWARDS = {
 };
 
 // M5: words the pet can remember from chat
+// M3: expanded with plurals, verb forms, common variants (+40 terms)
 const MEMORY_TRIGGERS = [
-  'pizza','burger','sushi','cake','cookie','ice cream','chocolate','noodles',
-  'school','homework','teacher','exam','class','study',
-  'friend','sister','brother','mom','dad','family','pet',
-  'rain','sunny','cold','hot','snow','windy','storm',
-  'happy','sad','excited','scared','bored','tired','angry',
-  'game','movie','book','music','dance','sing','draw','paint','sport','swim','run',
-  'birthday','party','holiday','christmas','halloween','summer',
-  'cat','dog','fish','bird','hamster','rabbit',
+  // food
+  'pizza','burger','burgers','sushi','cake','cakes','cookie','cookies','ice cream',
+  'chocolate','noodles','pasta','tacos','taco','sandwich','sandwiches','ramen',
+  // school/study
+  'school','homework','teacher','exam','exams','class','study','studying','test','tests','project',
+  // people
+  'friend','friends','sister','brother','mom','dad','family','grandma','grandpa','cousin','pet',
+  // weather
+  'rain','raining','rainy','sunny','sunshine','cold','hot','snow','snowing','snowy','windy','storm','stormy',
+  // feelings
+  'happy','sad','excited','scared','bored','tired','angry','nervous','proud','lonely','silly',
+  // hobbies
+  'game','gaming','movie','movies','book','books','music','dance','dancing','sing','singing',
+  'draw','drawing','paint','painting','sport','sports','swim','swimming','run','running',
+  'coding','reading','writing','hiking','camping','cooking','baking',
+  // events
+  'birthday','party','holiday','christmas','halloween','summer','vacation','weekend',
+  // animals
+  'cat','cats','dog','dogs','fish','bird','birds','hamster','rabbit','rabbits','turtle',
 ];
 
 // ══ Init ══
@@ -151,6 +165,7 @@ function navigate(screenId) {
   if (screenId === 'profile') renderProfile();
   if (screenId === 'home')    { updateNavDot(); updateMoodExpression(); }
   if (screenId === 'games')   renderChallenges();
+  if (screenId === 'profile') setTimeout(renderAchievements, 50);
 }
 
 // ══ Create Pet Wizard ══
@@ -251,7 +266,7 @@ function finishCreation() {
   state.inventory   = { apple: 3, fish: 1, cake: 0, sushi: 0, smoothie: 0, mystery: 0, donut: 0, croissant: 0 };
   state.petMemories = [];
   state.dailyDeal   = { date: null, itemId: null, salePrice: 0, purchased: 0 };
-  state.friendsSince = todayKey();
+  state.friendsSince = Date.now(); // B2 fix: store timestamp, not date string
   state.bondDays    = 0;
   state.lastHighAffection = null;
   state.lastUpdate  = Date.now();
@@ -264,22 +279,24 @@ function applyStatDecay() {
   if (!state.lastUpdate) return;
   const elapsed = Math.min((Date.now() - state.lastUpdate) / 60000, 180);
   const s = state.stats;
-  s.hunger    = Math.max(5, s.hunger    - elapsed * 0.9);  // rebalanced
-  s.happiness = Math.max(5, s.happiness - elapsed * 0.5);
-  s.energy    = Math.max(5, s.energy    - elapsed * 0.4);
-  s.hygiene   = Math.max(5, s.hygiene   - elapsed * 0.25);
-  s.affection = Math.max(5, s.affection - elapsed * 0.6);
+  // M4: match live decay rates
+  s.hunger    = Math.max(5, s.hunger    - elapsed * 0.5);
+  s.happiness = Math.max(5, s.happiness - elapsed * 0.35);
+  s.energy    = Math.max(5, s.energy    - elapsed * 0.3);
+  s.hygiene   = Math.max(5, s.hygiene   - elapsed * 0.15);
+  s.affection = Math.max(5, s.affection - elapsed * 0.4);
 }
 
 function startDecay() {
   clearInterval(decayInterval);
   decayInterval = setInterval(() => {
     const s = state.stats;
-    s.hunger    = Math.max(5, s.hunger    - 0.9);  // rebalanced: 40% slower
-    s.happiness = Math.max(5, s.happiness - 0.5);
-    s.energy    = Math.max(5, s.energy    - 0.4);
-    s.hygiene   = Math.max(5, s.hygiene   - 0.25);
-    s.affection = Math.max(5, s.affection - 0.6);
+    // M4: rebalanced decay — ~185 min grace on hunger, ~220 min on affection
+    s.hunger    = Math.max(5, s.hunger    - 0.5);
+    s.happiness = Math.max(5, s.happiness - 0.35);
+    s.energy    = Math.max(5, s.energy    - 0.3);
+    s.hygiene   = Math.max(5, s.hygiene   - 0.15);
+    s.affection = Math.max(5, s.affection - 0.4);
 
     updateStatBars();
     updateNavDot();        // M1
@@ -580,7 +597,11 @@ async function handleChatSend() {
   const typingId = 'typing-' + Date.now();
   addTypingIndicator(typingId);
 
-  // Safety net: auto-remove typing indicator after 15 s even if AI hangs
+  // After 5s: update typing indicator to "Still thinking…"
+  const thinkingTimer = setTimeout(() => {
+    const bubble = document.querySelector(`#${typingId} .typing-bubble`);
+    if (bubble) bubble.innerHTML = '<span style="font-size:12px;color:#8878AA">Still thinking… 🤔</span>';
+  }, 5000);
   const typingSafety = setTimeout(() => removeTypingIndicator(typingId), 15000);
 
   let response;
@@ -605,6 +626,7 @@ async function handleChatSend() {
     response = getChatResponse(text, state.pet, state.stats);
   }
 
+  clearTimeout(thinkingTimer);
   clearTimeout(typingSafety);
   removeTypingIndicator(typingId);
   state.chatHistory.push({ role: 'pet', text: response });
@@ -614,6 +636,7 @@ async function handleChatSend() {
   if (typeof playChat === 'function') playChat();
   awardXP(2);
   tickChallenge('chat');
+  trackLifetime('chatCount');
   updateStatBars();
   updateMemoryBadge();
   saveGame(state);
@@ -673,16 +696,23 @@ function openCatchBall() {
   const canvas = el('catch-canvas');
   canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
   catchBallGame = new CatchBallGame();
-  const petColors = ['#F4A7B9','#A8D4EC','#93D6BC','#C8A8E8','#A8D8EC','#F09020','#1C1830','#F0EEE8','#EDE8E0','#D4A860','#28B038'];
-  const si = SPECIES.findIndex(s => s.id === state.pet.species);
-  catchBallGame.init(canvas, petColors[si] || '#F4A7B9');
+  // B6 fix: species→colour map, immune to reordering
+  const PET_BALL_COLORS = {
+    cat: '#F4A7B9', puppy: '#FFBF96', dragon: '#93D6BC',
+    bunny: '#C8A8E8', 'cloud-puff': '#A8D4EC',
+    fox: '#F09020', penguin: '#3860C0', panda: '#888899',
+    rabbit: '#C8B0B8', kangaroo: '#D4A860', parrot: '#28B038',
+  };
+  catchBallGame.init(canvas, PET_BALL_COLORS[state.pet.species] || '#F4A7B9');
   catchBallGame.onEnd = (score, coins) => {
     state.coins += coins;
     state.stats.happiness = Math.min(100, state.stats.happiness + Math.min(score * 2, 30));
     state.stats.energy    = Math.max(5,   state.stats.energy    - 10);
     awardXP(score + 5);
     animateCoinChange(coins);
-    tickChallenge('catch'); // ticked per ball above via score, but also tick for completion
+    tickChallenge('catch');
+    trackLifetime('catchCount', score);
+    trackLifetime('totalCoinsEarned', coins);
     updateUI(); saveGame(state);
     el('gameover-score').textContent = score;
     el('gameover-coins').textContent = coins;
@@ -721,6 +751,9 @@ function openDressUp() {
   dressUpController = initDressUp('dressup-controls', petImg, fullOutfit, (newOutfit) => {
     state.outfit = { ...newOutfit };
     state.stats.affection = Math.min(100, state.stats.affection + 4);
+    // Track fashionista achievement
+    const equippedCount = ['hat','accessory','wings','feet','wrap'].filter(k => newOutfit[k]).length;
+    if (equippedCount > 0) trackLifetime('outfitItemCount', equippedCount);
     updateHomeScreen();
     saveGame(state);
     showToast('Outfit saved! Looking amazing! ✨');
@@ -767,6 +800,8 @@ function openMemoryMatch(difficulty = 'normal') {
     state.stats.happiness = Math.min(100, state.stats.happiness + 15);
     awardXP(xp);
     tickChallenge('mm');
+    trackLifetime('mmCount');
+    trackLifetime('totalCoinsEarned', coins);
     animateCoinChange(coins);
     saveGame(state); // save immediately before any animation
     updateUI();
@@ -775,7 +810,8 @@ function openMemoryMatch(difficulty = 'normal') {
     el('mm-result-moves').textContent = moves;
     el('mm-result-time').textContent  = elapsed + 's';
     el('mm-result-overlay').classList.add('open');
-    if (typeof playLevelUp === 'function') playLevelUp();
+    // W3 fix: use achievement fanfare, not level-up fanfare
+    if (typeof playAchievement === 'function') playAchievement();
   };
   memoryMatchGame.start();
 }
@@ -843,17 +879,19 @@ function renderShop() {
     grid.appendChild(banner);
   }
 
-  // Regular items
+  // Regular items — W4 fix: show "Need X more 🪙" for ALL unaffordable items
   Object.entries(SHOP_ITEMS).forEach(([id, item]) => {
     const card = document.createElement('div');
     card.className = 'shop-card';
     const canAfford = state.coins >= item.price;
+    const shortage  = item.price - state.coins;
+    const btnLabel  = canAfford ? `${item.price} 🪙` : `Need ${shortage} more 🪙`;
     card.innerHTML = `
       <div class="shop-emoji">${item.emoji}</div>
       <div class="shop-name">${item.label}</div>
       <div class="shop-desc">+${item.hunger} 🍎 +${item.happiness} 😊 +${item.energy} ⚡ +${item.affection} 💖</div>
       <button class="shop-buy ${canAfford ? '' : 'disabled'}" onclick="buyItem('${id}')">
-        ${item.price} 🪙
+        ${btnLabel}
       </button>`;
     grid.appendChild(card);
   });
@@ -870,6 +908,7 @@ function buyItem(id) {
   if (typeof playPurchase === 'function') playPurchase();
   animateCoinChange();
   tickChallenge('shop');
+  trackLifetime('shopCount');
   renderShop(); updateCoinDisplay();
   showToast(`Bought ${item.label}! ${item.emoji}`);
   saveGame(state);
@@ -907,10 +946,13 @@ function renderProfile() {
   el('profile-streak').textContent   = `🔥 ${state.streak.count} day streak`;
   el('profile-coins').textContent    = `🪙 ${state.coins} coins`;
 
-  // M2: bond days
+  // B2 fix: friendsSince is now a timestamp (Date.now()), not a string
   const bondEl = el('profile-bond');
   if (bondEl && state.friendsSince) {
-    const days = Math.floor((Date.now() - new Date(state.friendsSince).getTime()) / 86400000);
+    const since = typeof state.friendsSince === 'number'
+      ? state.friendsSince
+      : new Date(state.friendsSince).getTime(); // backward compat for old saves
+    const days = Math.max(0, Math.floor((Date.now() - since) / 86400000));
     bondEl.textContent = `💕 Friends for ${days} day${days !== 1 ? 's' : ''}`;
   }
 
@@ -963,7 +1005,7 @@ function showLevelUp(level) {
     rewardEl.textContent = '+20 🪙 bonus coins!';
   }
   el('levelup-overlay').classList.add('open');
-  runConfetti();
+  runConfetti(state.pet?.species); // W5: seed confetti with pet colour
   if (typeof playLevelUp === 'function') playLevelUp();
   updateCoinDisplay();
   saveGame(state);
@@ -971,12 +1013,26 @@ function showLevelUp(level) {
 
 function closeLevelUp() { el('levelup-overlay').classList.remove('open'); }
 
-function runConfetti() {
+// W5 fix: confetti palette seeded by pet species colour
+const SPECIES_CONFETTI = {
+  cat: ['#F9D0DC','#F4A7B9','#FFD700','#F0F0F0','#C8A8E8'],
+  puppy: ['#FFE0C8','#FFBF96','#FFD700','#A8D4EC','#F0F0F0'],
+  dragon: ['#C8F0E0','#93D6BC','#FFD700','#5CB89A','#F0FFF8'],
+  bunny: ['#E8D4F8','#C8A8E8','#FFD700','#F4A7B9','#F8F0FF'],
+  'cloud-puff': ['#D4EEF8','#A8D4EC','#FFD700','#FFFFFF','#E8F4FC'],
+  fox: ['#F09020','#E08818','#FFD700','#FFF0D8','#F4A7B9'],
+  penguin: ['#1C1830','#3860C0','#FFD700','#F4F0EC','#A8D4EC'],
+  panda: ['#F0EEE8','#1C1830','#FFD700','#3C4080','#F4A0C0'],
+  rabbit: ['#EDE8E0','#C8B0B8','#FFD700','#F08090','#FFFFFF'],
+  kangaroo: ['#D4A860','#C09050','#FFD700','#E8C090','#F0B090'],
+  parrot: ['#28B038','#F08020','#FFD700','#4080E0','#F0D020'],
+};
+function runConfetti(species) {
   const canvas = el('confetti-canvas');
   if (!canvas) return;
   canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
   const ctx    = canvas.getContext('2d');
-  const colors = ['#F4A7B9','#C8A8E8','#93D6BC','#FFD700','#A8D4EC','#F09020','#80E8C0'];
+  const colors = SPECIES_CONFETTI[species] || ['#F4A7B9','#C8A8E8','#93D6BC','#FFD700','#A8D4EC','#F09020','#80E8C0'];
   const parts  = Array.from({ length: 90 }, () => ({
     x: Math.random() * canvas.width, y: -20,
     vx: (Math.random() - 0.5) * 5, vy: 2 + Math.random() * 3,
@@ -1013,9 +1069,10 @@ function checkDailyStreak() {
   if (!state.streak) state.streak = { count: 0, lastLogin: null };
   if (state.streak.lastLogin === today) return;
 
+  // B1 fix: use local date math, not UTC toISOString()
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yKey = yesterday.toISOString().slice(0, 10);
+  const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
   state.streak.count = state.streak.lastLogin === yKey ? state.streak.count + 1 : 1;
   state.streak.lastLogin = today;
 
@@ -1025,6 +1082,8 @@ function checkDailyStreak() {
   setTimeout(() => {
     showToast(`🔥 Day ${state.streak.count} streak! +${bonus} coins!`);
     if (typeof playStreak === 'function') playStreak();
+    trackLifetime('totalCoinsEarned', bonus);
+    _checkAchievements(); // loyal_7 achievement
     updateCoinDisplay();
   }, 1200);
 }
@@ -1155,6 +1214,7 @@ function hugPet() {
 
   if (typeof playHug === 'function') playHug();
   tickChallenge('hug');
+  trackLifetime('hugCount');
   updateStatBars();
   flashStatBars(['affection','happiness']);
   saveGame(state);
@@ -1259,13 +1319,101 @@ function renderChallenges() {
     <div class="challenges-title">
       🎯 Today's Challenges ${allDone ? '🎉' : ''}
     </div>
-    ${dc.challenges.map(c => `
+    ${dc.challenges.map(c => {
+      const pct = Math.min(100, Math.round((c.progress / c.target) * 100));
+      return `
       <div class="challenge-row ${c.done ? 'done' : ''}">
         <span class="challenge-check">${c.done ? '✅' : '⬜'}</span>
-        <span class="challenge-text">${c.text}</span>
-        <span class="challenge-progress">${c.progress}/${c.target}</span>
-        <span class="challenge-reward">+${c.reward}🪙</span>
-      </div>
-    `).join('')}
+        <div class="challenge-body">
+          <div class="challenge-top">
+            <span class="challenge-text">${c.text}</span>
+            <span class="challenge-reward">+${c.reward}🪙</span>
+          </div>
+          <div class="challenge-bar-track">
+            <div class="challenge-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="challenge-progress">${c.progress} / ${c.target}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+// ══ Achievement System ══
+const ACHIEVEMENTS = [
+  { id: 'first_chat',    icon: '💬', title: 'Hello World!',     desc: 'Send your first chat message',          key: 'chatCount',           target: 1   },
+  { id: 'chatterbox',    icon: '🗣️', title: 'Chatterbox',        desc: 'Chat 50 times with your pet',           key: 'chatCount',           target: 50  },
+  { id: 'ball_10',       icon: '🎾', title: 'Good Catch!',       desc: 'Catch 10 balls total',                  key: 'catchCount',          target: 10  },
+  { id: 'ball_100',      icon: '🏆', title: 'Ball Master',       desc: 'Catch 100 balls total',                 key: 'catchCount',          target: 100 },
+  { id: 'memory_done',   icon: '🃏', title: 'Memory Master',     desc: 'Complete a Memory Match game',          key: 'mmCount',             target: 1   },
+  { id: 'fashionista',   icon: '✨', title: 'Fashionista',       desc: 'Save an outfit with 3+ items equipped', key: 'outfitItemCount',     target: 3   },
+  { id: 'loyal_7',       icon: '🔥', title: 'Loyal Friend',      desc: 'Login 7 days in a row',                 key: 'streakDays',          target: 7   },
+  { id: 'shopaholic',    icon: '🛍️', title: 'Shopaholic',        desc: 'Buy 5 items from the shop',             key: 'shopCount',           target: 5   },
+  { id: 'hugger',        icon: '🤗', title: 'Big Hugger',        desc: 'Hug your pet 10 times',                 key: 'hugCount',            target: 10  },
+  { id: 'rich',          icon: '🪙', title: 'Coin Collector',    desc: 'Earn 500 coins over all time',          key: 'totalCoinsEarned',    target: 500 },
+];
+
+function _ensureLifetimeStats() {
+  if (!state.lifetimeStats) {
+    state.lifetimeStats = { chatCount:0, catchCount:0, mmCount:0, shopCount:0, hugCount:0, totalCoinsEarned:0, outfitItemCount:0 };
+  }
+  if (!state.achievements) state.achievements = {};
+}
+
+function trackLifetime(key, amount = 1) {
+  _ensureLifetimeStats();
+  state.lifetimeStats[key] = (state.lifetimeStats[key] || 0) + amount;
+  _checkAchievements();
+}
+
+function _checkAchievements() {
+  _ensureLifetimeStats();
+  const ls = state.lifetimeStats;
+  // Add streak days as virtual lifetime stat
+  const checkValues = { ...ls, streakDays: state.streak?.count || 0 };
+
+  ACHIEVEMENTS.forEach(a => {
+    if (state.achievements[a.id]) return; // already unlocked
+    if ((checkValues[a.key] || 0) >= a.target) {
+      state.achievements[a.id] = true;
+      _showAchievementUnlock(a);
+    }
+  });
+}
+
+function _showAchievementUnlock(achievement) {
+  if (typeof playAchievement === 'function') playAchievement();
+  showToast(`${achievement.icon} Achievement unlocked: "${achievement.title}"!`);
+  // Briefly flash the profile nav
+  const profileBtn = document.querySelector('.nav-btn[data-screen="profile"]');
+  if (profileBtn) {
+    profileBtn.style.background = 'linear-gradient(135deg,#FFD700,#FFA500)';
+    setTimeout(() => profileBtn.style.background = '', 2000);
+  }
+  saveGame(state);
+}
+
+function renderAchievements() {
+  const wrap = el('achievements-wrap');
+  if (!wrap) return;
+  _ensureLifetimeStats();
+
+  const earned   = ACHIEVEMENTS.filter(a => state.achievements[a.id]);
+  const unearned = ACHIEVEMENTS.filter(a => !state.achievements[a.id]);
+
+  wrap.innerHTML = `
+    <div class="ach-title">🏅 Achievements <span class="ach-count">${earned.length}/${ACHIEVEMENTS.length}</span></div>
+    <div class="ach-grid">
+      ${earned.map(a => `
+        <div class="ach-card earned" title="${a.desc}">
+          <span class="ach-icon">${a.icon}</span>
+          <span class="ach-name">${a.title}</span>
+        </div>`).join('')}
+      ${unearned.map(a => `
+        <div class="ach-card locked" title="${a.desc}">
+          <span class="ach-icon">🔒</span>
+          <span class="ach-name">${a.title}</span>
+        </div>`).join('')}
+    </div>
   `;
 }

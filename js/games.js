@@ -294,8 +294,8 @@ class CatchBallGame {
       this._spawnBall('golden');
     }
 
-    // Spawn bomb ball from level 5
-    if (this.level >= 5 && this.balls.every(b => b.type !== 'bomb') && this._frameCount % 400 === 0) {
+    // Spawn bomb ball from level 6 (W1 balance fix)
+    if (this.level >= 6 && this.balls.every(b => b.type !== 'bomb') && this._frameCount % 400 === 0) {
       this._spawnBall('bomb');
     }
 
@@ -345,7 +345,8 @@ class CatchBallGame {
     });
 
     // Level up every 5 catches
-    const newLevel = Math.max(1, Math.floor(this.score / 5) + 1);
+    // W1 fix: level every 8 catches (was 5) — less punishing for casual players
+    const newLevel = Math.max(1, Math.floor(this.score / 8) + 1);
     if (newLevel > this.level) {
       this.level = newLevel;
       this._addPopText(`LEVEL ${this.level}! 🎉`, c.width / 2, c.height / 2, '#FFD700', 28);
@@ -578,10 +579,11 @@ class CatchBallGame {
 // ══ Memory Match Game ══
 const MM_EMOJIS = ['🐱','🐶','🐉','🐰','☁️','🦊','🐧','🐼','🐇','🦘','🦜','🌸'];
 
+// B3 fix: hard mode 24 cards needs 6 cols (4 rows), not 4 cols (6 rows overflows mobile)
 const MM_DIFFICULTIES = {
   easy:   { pairs: 4,  cols: 4, label: 'Easy',   coinPer: 3,  xpPer: 2  },
   normal: { pairs: 8,  cols: 4, label: 'Normal',  coinPer: 5,  xpPer: 4  },
-  hard:   { pairs: 12, cols: 4, label: 'Hard',    coinPer: 8,  xpPer: 6  },
+  hard:   { pairs: 12, cols: 6, label: 'Hard',    coinPer: 8,  xpPer: 6  },
 };
 
 class MemoryMatchGame {
