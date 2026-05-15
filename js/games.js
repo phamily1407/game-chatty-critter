@@ -521,3 +521,134 @@ class CatchBallGame {
     if (typeof this.onEnd === 'function') this.onEnd(this.score, coins);
   }
 }
+
+
+// ══ Memory Match Game ══
+const MM_EMOJIS = ['🐱','🐶','🐉','🐰','☁️','🦊','🐧','🐼','🐇','🦘','🦜','🌸'];
+
+const MM_DIFFICULTIES = {
+  easy:   { pairs: 4,  cols: 4, label: 'Easy',   coinPer: 3,  xpPer: 2  },
+  normal: { pairs: 8,  cols: 4, label: 'Normal',  coinPer: 5,  xpPer: 4  },
+  hard:   { pairs: 12, cols: 4, label: 'Hard',    coinPer: 8,  xpPer: 6  },
+};
+
+class MemoryMatchGame {
+  constructor() {
+    this.cards      = [];
+    this.flipped    = [];   // indices of face-up unmatched cards (max 2)
+    this.matched    = new Set();
+    this.moves      = 0;
+    this.score      = 0;
+    this.locked     = false;
+    this.difficulty = 'normal';
+    this.container  = null;
+    this.startTime  = null;
+    this.onEnd      = null;
+  }
+
+  init(containerId, difficulty = 'normal') {
+    this.container  = document.getElementById(containerId);
+    this.difficulty = MM_DIFFICULTIES[difficulty] ? difficulty : 'normal';
+  }
+
+  start() {
+    this.cards   = [];
+    this.flipped = [];
+    this.matched = new Set();
+    this.moves   = 0;
+    this.score   = 0;
+    this.locked  = false;
+    this.startTime = Date.now();
+    this._build();
+  }
+
+  _build() {
+    const cfg    = MM_DIFFICULTIES[this.difficulty];
+    const emojis = MM_EMOJIS.slice(0, cfg.pairs);
+    this.cards   = [...emojis, ...emojis]
+      .sort(() => Math.random() - 0.5)
+      .map((emoji, i) => ({ id: i, emoji }));
+    this._render();
+  }
+
+  _render() {
+    if (!this.container) return;
+    const cfg = MM_DIFFICULTIES[this.difficulty];
+    this.container.innerHTML = '';
+
+    // Info bar
+    const bar = document.createElement('div');
+    bar.className = 'mm-bar';
+    bar.innerHTML = `
+      <span>🎯 Moves: <strong>${this.moves}</strong></span>
+      <span>✅ Pairs: <strong>${this.matched.size / 2}</strong> / ${cfg.pairs}</span>
+      <span>⭐ Score: <strong>${this.score}</strong></span>`;
+    this.container.appendChild(bar);
+
+    // Grid
+    const grid = document.createElement('div');
+    grid.className = 'mm-grid';
+    grid.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
+
+    this.cards.forEach((card, i) => {
+      const isFlipped  = this.flipped.includes(i);
+      const isMatched  = this.matched.has(i);
+      const btn        = document.createElement('button');
+      btn.className    = 'mm-card' + (isFlipped || isMatched ? ' mm-flipped' : '') + (isMatched ? ' mm-matched' : '');
+      btn.setAttribute('aria-label', isFlipped || isMatched ? card.emoji : 'hidden card');
+      btn.innerHTML    = `
+        <div class="mm-inner">
+          <div class="mm-back">🐾</div>
+          <div class="mm-front">${card.emoji}</div>
+        </div>`;
+      btn.onclick = () => this._tap(i);
+      grid.appendChild(btn);
+    });
+    this.container.appendChild(grid);
+  }
+
+  _tap(i) {
+    if (this.locked)           return;
+    if (this.matched.has(i))   return;
+    if (this.flipped.includes(i)) return;
+    if (this.flipped.length >= 2) return;
+
+    if (typeof playFlip === 'function') playFlip();
+    this.flipped.push(i);
+    this._render();
+
+    if (this.flipped.length === 2) {
+      this.moves++;
+      this.locked = true;
+      setTimeout(() => this._check(), 900);
+    }
+  }
+
+  _check() {
+    const [a, b] = this.flipped;
+    if (this.cards[a].emoji === this.cards[b].emoji) {
+      this.matched.add(a);
+      this.matched.add(b);
+      const cfg = MM_DIFFICULTIES[this.difficulty];
+      this.score += cfg.coinPer;
+      if (typeof playMatch === 'function') playMatch();
+    } else {
+      if (typeof playWrong === 'function') playWrong();
+    }
+    this.flipped = [];
+    this.locked  = false;
+    this._render();
+
+    if (this.matched.size === this.cards.length) {
+      setTimeout(() => this._complete(), 400);
+    }
+  }
+
+  _complete() {
+    const cfg     = MM_DIFFICULTIES[this.difficulty];
+    const elapsed = Math.round((Date.now() - this.startTime) / 1000);
+    const coins   = this.score;
+    const xp      = cfg.pairs * cfg.xpPer;
+    if (typeof this.onEnd === 'function') this.onEnd(this.score, coins, xp, this.moves, elapsed);
+  }
+}
