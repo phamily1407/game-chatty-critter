@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatty Critter — Regression Tests</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg,#F0E8FF,#E8F0FF);
+      min-height: 100vh; padding: 32px 20px;
+      color: #3D3550;
+    }
+    h1 { font-size: 26px; font-weight: 900; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #8878AA; margin-bottom: 24px; }
+    .run-btn {
+      font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 900;
+      background: linear-gradient(135deg,#F4A7B9,#C8A8E8);
+      color: white; border: none; border-radius: 50px;
+      padding: 12px 32px; cursor: pointer; margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(200,168,232,0.4);
+    }
+    .run-btn:hover { transform: translateY(-2px); }
+    #test-output { max-width: 720px; }
+    .summary {
+      border-radius: 16px; padding: 16px 20px; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 15px;
+    }
+    .summary.all-pass { background: #D4F8D4; color: #2E7D32; }
+    .summary.has-fails { background: #FFE0E0; color: #C62828; }
+    .summary span { font-size: 13px; font-weight: 700; opacity: 0.8; }
+    .section-header {
+      font-size: 11px; font-weight: 900; letter-spacing: 2px;
+      text-transform: uppercase; color: #BBAACC;
+      margin: 20px 0 8px; padding-left: 4px;
+    }
+    .test-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 7px 12px; border-radius: 10px; margin-bottom: 3px;
+      font-size: 13px; font-weight: 700;
+    }
+    .test-row.pass { background: rgba(255,255,255,0.6); color: #2E7D32; }
+    .test-row.fail { background: #FFE0E0; color: #C62828; }
+    .icon { flex-shrink: 0; font-size: 14px; }
+    .name { flex: 1; }
+    .detail { font-size: 11px; font-weight: 600; color: #E53935; margin-top: 2px; display: block; }
+    .loading { color: #8878AA; font-size: 14px; font-weight: 700; padding: 16px 0; }
+
+    /* Minimal DOM mock notice */
+    .mock-notice {
+      background: #FFF8E0; border: 2px solid #FFD700; border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 20px; font-size: 12px;
+      font-weight: 700; color: #7A6000;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Chatty Critter — Regression Tests</h1>
+  <p class="subtitle">v1.2.6 · Run before every push to GitHub</p>
+
+  <div class="mock-notice">
+    ℹ️ Tests run in a minimal environment — DOM-dependent game screens are not rendered.
+    Only pure logic functions are tested. This is intentional.
+  </div>
+
+  <button class="run-btn" onclick="runTests()">▶ Run All Tests</button>
+  <div id="test-output"><div class="loading">Click "Run All Tests" to start...</div></div>
+
+  <!-- ── Minimal DOM stubs so game scripts don't crash on load ── -->
+  <script>
+    // Stub out browser APIs not available in test environment
+    window.localStorage = window.localStorage || {
+      _store: {},
+      getItem(k)    { return this._store[k] || null; },
+      setItem(k, v) { this._store[k] = v; },
+      removeItem(k) { delete this._store[k]; },
+    };
+    window.AudioContext = window.AudioContext || window.webkitAudioContext || function() {
+      return { createOscillator(){return{connect(){},frequency:{setValueAtTime(){}},start(){},stop(){}}},
+               createGain(){return{connect(){},gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}}}},
+               destination:{}, currentTime: 0, state:'running', resume(){} };
+    };
+    window.requestAnimationFrame = window.requestAnimationFrame || (fn => setTimeout(fn, 16));
+    // Suppress DOMContentLoaded game init — game scripts check for pet elements that don't exist
+    document.getElementById = function(id) { return null; };
+    document.querySelector   = function()  { return null; };
+    document.querySelectorAll= function()  { return { forEach(){} }; };
+  </script>
+
+  <!-- ── Game scripts (pure-logic only — NOT main.js which requires full DOM) ── -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/chat.js"></script>
+  <script src="../js/games.js"></script>
+  <script src="../js/sound.js"></script>
+  <script src="../js/ai.js"></script>
+
+  <!-- ── Restore real getElementById after scripts load ── -->
+  <script>
+    delete document.getElementById;
+    delete document.querySelector;
+    delete document.querySelectorAll;
+
+    // Inline pure-logic functions from main.js that tests need
+    // (avoids loading full main.js with its DOMContentLoaded init)
+    function todayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function getTimePeriod() {
+      const h = new Date().getHours();
+      if (h >= 5  && h < 7)  return 'dawn';
+      if (h >= 7  && h < 12) return 'morning';
+      if (h >= 12 && h < 17) return 'afternoon';
+      if (h >= 17 && h < 20) return 'evening';
+      return 'night';
+    }
+    // Stubs for main.js globals tests reference
+    const SPECIES = [
+      { id:'cat'}, { id:'puppy'}, { id:'dragon'}, { id:'bunny'},
+      { id:'cloud-puff'}, { id:'fox'}, { id:'penguin'}, { id:'panda'},
+      { id:'rabbit'}, { id:'kangaroo'}, { id:'parrot'}
+    ];
+    // Re-declare SPECIES from actual storage to get full data
+    // (already loaded from storage.js if it defines SPECIES there — otherwise we use the stub above)
+  </script>
+
+  <!-- ── Test runner ── -->
+  <script src="tests.js"></script>
+  <script>
+    // Auto-run if ?autorun in URL (useful for CI)
+    if (location.search.includes('autorun')) {
+      window.addEventListener('load', runTests);
+    }
+  </script>
+</body>
+</html>

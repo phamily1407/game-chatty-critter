@@ -428,15 +428,19 @@ function applyOutfitToHome() {
   const outfit  = state.outfit || {};
   const wrapper = document.querySelector('.home-pet-wrapper');
 
-  // Helper: apply one overlay span
-  function _applySpan(spanId, items, currentId, isBehind) {
+  // Helper: apply one overlay span using per-species calibrated positions
+  const species = state.pet?.species || 'cat';
+  function _applySpan(spanId, items, category, currentId, isBehind) {
     const span = el(spanId);
     if (!span) return;
     const item = items?.find(i => i.id === currentId);
     if (item) {
       Object.assign(span.style, {
-        display: 'block', top: item.top, left: item.left, fontSize: item.size,
-        zIndex: isBehind ? '0' : '3',
+        display:   'block',
+        top:       (typeof getAdjustedTop === 'function') ? getAdjustedTop(item, category, species) : item.top,
+        left:      item.left,
+        fontSize:  item.size,
+        zIndex:    isBehind ? '0' : '3',
       });
       span.textContent = item.emoji;
     } else {
@@ -444,11 +448,11 @@ function applyOutfitToHome() {
     }
   }
 
-  _applySpan('home-wings',     DRESS_UP_ITEMS.wings,     outfit.wings,     true);
-  _applySpan('home-hat',       DRESS_UP_ITEMS.hat,       outfit.hat,       false);
-  _applySpan('home-accessory', DRESS_UP_ITEMS.accessory, outfit.accessory, false);
-  _applySpan('home-feet',      DRESS_UP_ITEMS.feet,      outfit.feet,      false);
-  _applySpan('home-wrap',      DRESS_UP_ITEMS.wrap,      outfit.wrap,      false);
+  _applySpan('home-wings',     DRESS_UP_ITEMS.wings,     'wings',     outfit.wings,     true);
+  _applySpan('home-hat',       DRESS_UP_ITEMS.hat,       'hat',       outfit.hat,       false);
+  _applySpan('home-accessory', DRESS_UP_ITEMS.accessory, 'accessory', outfit.accessory, false);
+  _applySpan('home-feet',      DRESS_UP_ITEMS.feet,      'feet',      outfit.feet,      false);
+  _applySpan('home-wrap',      DRESS_UP_ITEMS.wrap,      'wrap',      outfit.wrap,      false);
 
   if (wrapper) {
     const bg = DRESS_UP_ITEMS.bg.find(i => i.id === outfit.bgId);
@@ -760,7 +764,7 @@ function openDressUp() {
     hat: null, accessory: null, wings: null, feet: null, wrap: null, bgId: 'none',
     ...(state.outfit || {}),
   };
-  dressUpController = initDressUp('dressup-controls', petImg, fullOutfit, (newOutfit) => {
+  dressUpController = initDressUp('dressup-controls', state.pet.species, fullOutfit, (newOutfit) => {
     state.outfit = { ...newOutfit };
     state.stats.affection = Math.min(100, state.stats.affection + 4);
     // M1 fix B3: fashionista = save with 3+ items equipped simultaneously

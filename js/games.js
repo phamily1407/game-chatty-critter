@@ -80,6 +80,56 @@ const DRESS_UP_ITEMS = {
   ],
 };
 
+// ══ Per-Pet Position Anchors ══
+// Delta values (in percentage points) added to each item's base top/left position.
+// Calculated from SVG geometry: wrapper 240×264px, SVG viewBox 0 0 200 220, scale 1.2×
+//
+//  h  = hat           (head-top anchor)
+//  g  = glasses/monocle (eye-level anchor)
+//  fa = face accessories (bow, flower — upper face)
+//  ba = body accessories (star, heart, wand — mid-body)
+//  f  = footwear      (bottom anchor)
+//  w  = wraps         (neck/chest anchor)
+//  wi = wings         (back anchor)
+//
+// positive  → item moves DOWN  |  negative → item moves UP
+const PET_ANCHORS = {
+  //              h     g    fa    ba    f     w    wi
+  cat:        {  h: 0,  g: 0,  fa: 0,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Reference: head top 16.3%, eyes 38.3%
+  puppy:      {  h: 1,  g:-1,  fa: 1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Head top 15.5%, floppy side-ears OK
+  dragon:     {  h:-5,  g: 4,  fa:-2,  ba: 0,  f: 0,  w: 0,  wi: -3 },  // Spines at 10.9% → hat above them; eyes at 38.6%
+  bunny:      {  h: 5,  g: 5,  fa: 4,  ba: 3,  f: 7,  w: 3,  wi:  3 },  // Head top 18.9%, eyes 40.2%, feet 92.8%, tall ears
+  'cloud-puff':{  h:23,  g:20,  fa:12,  ba: 8,  f: 6,  w: 5,  wi:  5 },  // Cloud top 33.7%, eyes 54.5%! No feet. Unusual proportions.
+  fox:        {  h:-4,  g: 0,  fa:-2,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Ear tips at 6.4% → hat above pointy ears
+  penguin:    {  h: 0,  g:-2,  fa: 0,  ba: 0,  f: 6,  w: 2,  wi:  2 },  // Eyes at 36.4%, orange feet at 91.7%
+  panda:      {  h:-3,  g: 0,  fa:-1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Ear circles at 9.5% → hat above ears
+  rabbit:     {  h: 5,  g: 4,  fa: 4,  ba: 3,  f: 6,  w: 3,  wi:  3 },  // Head top 18.2%, eyes 39%, feet 91.7%, floppy ears
+  kangaroo:   {  h:-1,  g: 1,  fa: 0,  ba: 2,  f: 6,  w: 3,  wi:  0 },  // Head top 12.7%, ears to 1.4%, big feet 91.7%
+  parrot:     {  h: 0,  g:-1,  fa:-1,  ba: 0,  f: 0,  w:-1,  wi:  0 },  // Head top 15.5%, large beak area
+};
+
+// Classify which anchor key an accessory uses
+function _accAnchorKey(itemId) {
+  if (itemId === 'glasses' || itemId === 'monocle') return 'g';  // eye-level
+  if (['bow','flower-acc','balloon'].includes(itemId))  return 'fa'; // upper face
+  return 'ba'; // body-level (star, heart, rainbow, mic, wand)
+}
+
+// Compute adjusted top value for an item given the pet's species
+function getAdjustedTop(item, category, species) {
+  const anchors = PET_ANCHORS[species] || PET_ANCHORS.cat;
+  const baseTop = parseFloat(item.top) || 0;
+  let delta = 0;
+  switch (category) {
+    case 'hat':       delta = anchors.h; break;
+    case 'feet':      delta = anchors.f; break;
+    case 'wrap':      delta = anchors.w; break;
+    case 'wings':     delta = anchors.wi; break;
+    case 'accessory': delta = anchors[_accAnchorKey(item.id)] || 0; break;
+  }
+  return `${baseTop + delta}%`;
+}
+
 // Category config — tab label, icon, outfit key
 const DRESSUP_CATEGORIES = [
   { key: 'hat',       label: 'Hats',       icon: '🎩', outfitKey: 'hat'       },
@@ -91,9 +141,12 @@ const DRESSUP_CATEGORIES = [
 ];
 
 // ══ Dress Up ══
-function initDressUp(containerId, _petImgEl, currentOutfit, onSave) {
+// species parameter: pet species ID used for per-pet position calibration
+function initDressUp(containerId, species, currentOutfit, onSave) {
   const container = document.getElementById(containerId);
   if (!container) return null;
+
+  const petSpecies = species || 'cat';
 
   // Normalise outfit — include all slots
   let outfit = {
@@ -106,15 +159,18 @@ function initDressUp(containerId, _petImgEl, currentOutfit, onSave) {
   };
   let activeCategory = 'hat';
 
-  // ── Apply outfit to all overlay spans ──────────────────────
-  function applyOverlay(spanId, items, currentId) {
+  // ── Apply outfit to all overlay spans (species-calibrated) ──
+  function applyOverlay(spanId, items, category, currentId) {
     const span = document.getElementById(spanId);
     if (!span) return;
     const item = items.find(i => i.id === currentId);
     if (item) {
       Object.assign(span.style, {
-        display: 'block', top: item.top, left: item.left, fontSize: item.size,
-        zIndex: item.back ? '0' : '3',
+        display:   'block',
+        top:       getAdjustedTop(item, category, petSpecies),
+        left:      item.left,
+        fontSize:  item.size,
+        zIndex:    item.back ? '0' : '3',
       });
       span.textContent = item.emoji;
     } else {
@@ -123,11 +179,11 @@ function initDressUp(containerId, _petImgEl, currentOutfit, onSave) {
   }
 
   function applyOutfit() {
-    applyOverlay('dressup-hat',       DRESS_UP_ITEMS.hat,       outfit.hat);
-    applyOverlay('dressup-accessory', DRESS_UP_ITEMS.accessory, outfit.accessory);
-    applyOverlay('dressup-wings',     DRESS_UP_ITEMS.wings,     outfit.wings);
-    applyOverlay('dressup-feet',      DRESS_UP_ITEMS.feet,      outfit.feet);
-    applyOverlay('dressup-wrap',      DRESS_UP_ITEMS.wrap,      outfit.wrap);
+    applyOverlay('dressup-hat',       DRESS_UP_ITEMS.hat,       'hat',       outfit.hat);
+    applyOverlay('dressup-accessory', DRESS_UP_ITEMS.accessory, 'accessory', outfit.accessory);
+    applyOverlay('dressup-wings',     DRESS_UP_ITEMS.wings,     'wings',     outfit.wings);
+    applyOverlay('dressup-feet',      DRESS_UP_ITEMS.feet,      'feet',      outfit.feet);
+    applyOverlay('dressup-wrap',      DRESS_UP_ITEMS.wrap,      'wrap',      outfit.wrap);
 
     // Background
     const wrapper = document.getElementById('dressup-pet-wrapper');
