@@ -93,19 +93,21 @@ const DRESS_UP_ITEMS = {
 //  wi = wings         (back anchor)
 //
 // positive  → item moves DOWN  |  negative → item moves UP
+// After SVG standardization (DESIGN_SYSTEM.md), most deltas are now 0 or very small.
+// Bunny (shifted -6), Rabbit (shifted -4), Cloud-Puff (redesigned) are fixed at SVG level.
 const PET_ANCHORS = {
   //              h     g    fa    ba    f     w    wi
-  cat:        {  h: 0,  g: 0,  fa: 0,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Reference: head top 16.3%, eyes 38.3%
-  puppy:      {  h: 1,  g:-1,  fa: 1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Head top 15.5%, floppy side-ears OK
-  dragon:     {  h:-5,  g: 4,  fa:-2,  ba: 0,  f: 0,  w: 0,  wi: -3 },  // Spines at 10.9% → hat above them; eyes at 38.6%
-  bunny:      {  h: 5,  g: 5,  fa: 4,  ba: 3,  f: 7,  w: 3,  wi:  3 },  // Head top 18.9%, eyes 40.2%, feet 92.8%, tall ears
-  'cloud-puff':{  h:23,  g:20,  fa:12,  ba: 8,  f: 6,  w: 5,  wi:  5 },  // Cloud top 33.7%, eyes 54.5%! No feet. Unusual proportions.
-  fox:        {  h:-4,  g: 0,  fa:-2,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Ear tips at 6.4% → hat above pointy ears
-  penguin:    {  h: 0,  g:-2,  fa: 0,  ba: 0,  f: 6,  w: 2,  wi:  2 },  // Eyes at 36.4%, orange feet at 91.7%
-  panda:      {  h:-3,  g: 0,  fa:-1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Ear circles at 9.5% → hat above ears
-  rabbit:     {  h: 5,  g: 4,  fa: 4,  ba: 3,  f: 6,  w: 3,  wi:  3 },  // Head top 18.2%, eyes 39%, feet 91.7%, floppy ears
-  kangaroo:   {  h:-1,  g: 1,  fa: 0,  ba: 2,  f: 6,  w: 3,  wi:  0 },  // Head top 12.7%, ears to 1.4%, big feet 91.7%
-  parrot:     {  h: 0,  g:-1,  fa:-1,  ba: 0,  f: 0,  w:-1,  wi:  0 },  // Head top 15.5%, large beak area
+  cat:        {  h: 0,  g: 0,  fa: 0,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Baseline: cy=88, eyes cy=84
+  puppy:      {  h: 1,  g:-1,  fa: 1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Floppy side ears; head same cy=88
+  dragon:     {  h:-4,  g: 3,  fa:-2,  ba: 0,  f: 0,  w: 0,  wi: -2 },  // Spines at y≈24; eyes at cy=85
+  bunny:      {  h: 0,  g: 0,  fa: 0,  ba: 0,  f: 4,  w: 1,  wi:  1 },  // SVG fixed → head cy=88; feet y=198
+  'cloud-puff':{  h: 0,  g: 0,  fa: 0,  ba: 0,  f: 4,  w: 2,  wi:  2 },  // SVG fixed → eyes cy=84; cloud body lower
+  fox:        {  h:-3,  g: 0,  fa:-1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Pointed ear tips at y≈14
+  penguin:    {  h: 0,  g:-2,  fa: 0,  ba: 0,  f: 4,  w: 2,  wi:  2 },  // Eyes cy=80; orange feet at y≈202
+  panda:      {  h:-2,  g: 0,  fa:-1,  ba: 0,  f: 0,  w: 0,  wi:  0 },  // Round ear circles at y≈21
+  rabbit:     {  h: 0,  g: 2,  fa: 0,  ba: 1,  f: 4,  w: 1,  wi:  1 },  // SVG fixed → head cy=88; feet y=198
+  kangaroo:   {  h:-1,  g: 1,  fa: 0,  ba: 2,  f: 4,  w: 2,  wi:  0 },  // Head cy=84, tall thin ears; big feet y≈202
+  parrot:     {  h: 0,  g:-1,  fa:-1,  ba: 0,  f: 0,  w:-1,  wi:  0 },  // Head cy=86; beak area
 };
 
 // Classify which anchor key an accessory uses

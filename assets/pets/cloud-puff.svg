@@ -1,54 +1,67 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
-  <!-- Stars and sparkles around -->
-  <text x="22" y="52" font-size="14" opacity="0.7">✦</text>
-  <text x="162" y="44" font-size="12" opacity="0.6">✦</text>
-  <text x="170" y="130" font-size="10" opacity="0.5">✧</text>
-  <text x="18" y="140" font-size="10" opacity="0.5">✧</text>
-  <text x="92" y="22" font-size="11" opacity="0.6">✦</text>
-  <!-- Rainbow arc (subtle) -->
-  <path d="M 40 175 Q 100 130 160 175" stroke="none" fill="none"/>
-  <!-- Fluffy cloud body - built from overlapping circles -->
-  <circle cx="100" cy="148" r="48" fill="#D4EEF8"/>
-  <circle cx="68" cy="138" r="36" fill="#D4EEF8"/>
-  <circle cx="132" cy="138" r="36" fill="#D4EEF8"/>
-  <circle cx="84" cy="118" r="32" fill="#D4EEF8"/>
-  <circle cx="116" cy="118" r="32" fill="#D4EEF8"/>
-  <circle cx="100" cy="108" r="34" fill="#D4EEF8"/>
-  <circle cx="72" cy="110" r="26" fill="#D4EEF8"/>
-  <circle cx="128" cy="110" r="26" fill="#D4EEF8"/>
-  <circle cx="56" cy="128" r="22" fill="#D4EEF8"/>
-  <circle cx="144" cy="128" r="22" fill="#D4EEF8"/>
-  <!-- Inner glow / lighter center -->
-  <circle cx="100" cy="130" r="44" fill="#EAF6FC" opacity="0.6"/>
-  <!-- Dreamy half-closed eyes -->
+  <!-- REDESIGNED: cloud-puff now conforms to design standard -->
+  <!-- Head cloud centered at cy=88, eyes at cy=84 (was cy=120 — off by 36px) -->
+
+  <!-- Stars and sparkles -->
+  <text x="20" y="48" font-size="13" opacity="0.7">✦</text>
+  <text x="162" y="42" font-size="11" opacity="0.6">✦</text>
+  <text x="172" y="148" font-size="9"  opacity="0.5">✧</text>
+  <text x="16"  y="152" font-size="9"  opacity="0.5">✧</text>
+
+  <!-- ── CLOUD BODY (below head) ── -->
+  <circle cx="100" cy="170" r="44" fill="#D4EEF8"/>
+  <circle cx="68"  cy="160" r="32" fill="#D4EEF8"/>
+  <circle cx="132" cy="160" r="32" fill="#D4EEF8"/>
+  <circle cx="55"  cy="178" r="24" fill="#D4EEF8"/>
+  <circle cx="145" cy="178" r="24" fill="#D4EEF8"/>
+
+  <!-- ── CLOUD HEAD — standard position (center cy=88) ── -->
+  <!-- Main head cloud -->
+  <circle cx="100" cy="88"  r="50" fill="#D4EEF8"/>
+  <!-- Cheek puffs -->
+  <circle cx="70"  cy="76"  r="30" fill="#D4EEF8"/>
+  <circle cx="130" cy="76"  r="30" fill="#D4EEF8"/>
+  <!-- Forehead puffs -->
+  <circle cx="100" cy="50"  r="26" fill="#D4EEF8"/>
+  <circle cx="72"  cy="56"  r="20" fill="#D4EEF8"/>
+  <circle cx="128" cy="56"  r="20" fill="#D4EEF8"/>
+
+  <!-- Inner glow -->
+  <circle cx="100" cy="88" r="44" fill="#EAF6FC" opacity="0.6"/>
+
+  <!-- ── EYES at standard cy=84 ── -->
   <!-- Left eye -->
-  <ellipse cx="82" cy="120" rx="13" ry="12" fill="white"/>
-  <ellipse cx="82" cy="124" rx="13" ry="8" fill="#D4EEF8"/>
-  <circle cx="82" cy="118" r="8" fill="#5B9EC9"/>
-  <circle cx="82" cy="118" r="5" fill="#1A3D5C"/>
-  <circle cx="85" cy="114" r="2.5" fill="white"/>
-  <!-- Eyelid (dreamy/sleepy look) -->
-  <path d="M 69 118 Q 82 112 95 118" fill="#D4EEF8"/>
+  <ellipse cx="82" cy="84" rx="13" ry="12" fill="white"/>
+  <!-- Dreamy eyelid (covers lower part) -->
+  <ellipse cx="82" cy="89" rx="13" ry="7"  fill="#D4EEF8"/>
+  <circle  cx="82" cy="82" r="8"           fill="#5B9EC9"/>
+  <circle  cx="82" cy="82" r="5"           fill="#1A3D5C"/>
+  <circle  cx="85" cy="78" r="2.5"         fill="white"/>
+  <!-- Dreamy upper lid -->
+  <path d="M 69 82 Q 82 76 95 82" fill="#D4EEF8"/>
   <!-- Right eye -->
-  <ellipse cx="118" cy="120" rx="13" ry="12" fill="white"/>
-  <ellipse cx="118" cy="124" rx="13" ry="8" fill="#D4EEF8"/>
-  <circle cx="118" cy="118" r="8" fill="#5B9EC9"/>
-  <circle cx="118" cy="118" r="5" fill="#1A3D5C"/>
-  <circle cx="121" cy="114" r="2.5" fill="white"/>
-  <!-- Eyelid -->
-  <path d="M 105 118 Q 118 112 131 118" fill="#D4EEF8"/>
-  <!-- Tiny smile -->
-  <path d="M 93 132 Q 100 138 107 132" stroke="#A8D4EC" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <!-- Rosy cheeks (very soft) -->
-  <ellipse cx="68" cy="128" rx="10" ry="7" fill="#A8D4EC" opacity="0.4"/>
-  <ellipse cx="132" cy="128" rx="10" ry="7" fill="#A8D4EC" opacity="0.4"/>
-  <!-- Little sparkle lines -->
-  <line x1="30" y1="80" x2="38" y2="72" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-  <line x1="30" y1="72" x2="38" y2="80" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-  <line x1="164" y1="92" x2="172" y2="84" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-  <line x1="164" y1="84" x2="172" y2="92" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <ellipse cx="118" cy="84" rx="13" ry="12" fill="white"/>
+  <ellipse cx="118" cy="89" rx="13" ry="7"  fill="#D4EEF8"/>
+  <circle  cx="118" cy="82" r="8"           fill="#5B9EC9"/>
+  <circle  cx="118" cy="82" r="5"           fill="#1A3D5C"/>
+  <circle  cx="121" cy="78" r="2.5"         fill="white"/>
+  <path d="M 105 82 Q 118 76 131 82" fill="#D4EEF8"/>
+
+  <!-- Tiny smile (below standard nose area, cy≈102) -->
+  <path d="M 93 96 Q 100 102 107 96" stroke="#A8D4EC" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Cheek blush -->
+  <ellipse cx="68"  cy="92" rx="10" ry="7" fill="#A8D4EC" opacity="0.4"/>
+  <ellipse cx="132" cy="92" rx="10" ry="7" fill="#A8D4EC" opacity="0.4"/>
+
   <!-- Rainbow arc at bottom -->
-  <path d="M 55 190 Q 100 170 145 190" stroke="#FFB3C6" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
-  <path d="M 60 196 Q 100 178 140 196" stroke="#B5EAD7" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
-  <path d="M 65 202 Q 100 186 135 202" stroke="#A8D4EC" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M 52 200 Q 100 180 148 200" stroke="#FFB3C6" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 57 207 Q 100 188 143 207" stroke="#B5EAD7" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 62 214 Q 100 196 138 214" stroke="#A8D4EC" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- Sparkle crosses -->
+  <line x1="30"  y1="92" x2="38"  y2="84" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="30"  y1="84" x2="38"  y2="92" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="164" y1="96" x2="172" y2="88" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="164" y1="88" x2="172" y2="96" stroke="#A8D4EC" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
 </svg>

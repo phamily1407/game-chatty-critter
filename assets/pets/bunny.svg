@@ -1,46 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
-  <!-- Left ear outer -->
-  <ellipse cx="76" cy="36" rx="18" ry="44" fill="#E8D4F8" transform="rotate(-8 76 36)"/>
+  <!-- All Y coordinates shifted -6 from original so head center = cy=88 (design standard) -->
+  <!-- Left ear outer (cy 36→30) -->
+  <ellipse cx="76" cy="30" rx="18" ry="44" fill="#E8D4F8" transform="rotate(-8 76 30)"/>
   <!-- Right ear outer -->
-  <ellipse cx="124" cy="36" rx="18" ry="44" fill="#E8D4F8" transform="rotate(8 124 36)"/>
+  <ellipse cx="124" cy="30" rx="18" ry="44" fill="#E8D4F8" transform="rotate(8 124 30)"/>
   <!-- Left ear inner -->
-  <ellipse cx="76" cy="36" rx="10" ry="34" fill="#C8A8E8" transform="rotate(-8 76 36)" opacity="0.7"/>
+  <ellipse cx="76" cy="30" rx="10" ry="34" fill="#C8A8E8" transform="rotate(-8 76 30)" opacity="0.7"/>
   <!-- Right ear inner -->
-  <ellipse cx="124" cy="36" rx="10" ry="34" fill="#C8A8E8" transform="rotate(8 124 36)" opacity="0.7"/>
-  <!-- Body -->
-  <ellipse cx="100" cy="164" rx="50" ry="42" fill="#EEE0F8"/>
-  <!-- Tummy patch -->
-  <ellipse cx="100" cy="168" rx="30" ry="26" fill="#F8F0FF"/>
-  <!-- Head -->
-  <circle cx="100" cy="94" r="52" fill="#EEE0F8"/>
-  <!-- Eye whites -->
-  <circle cx="80" cy="88" r="14" fill="white"/>
-  <circle cx="120" cy="88" r="14" fill="white"/>
-  <!-- Iris - soft pink/violet -->
-  <circle cx="80" cy="88" r="9" fill="#9B6EC8"/>
-  <circle cx="120" cy="88" r="9" fill="#9B6EC8"/>
+  <ellipse cx="124" cy="30" rx="10" ry="34" fill="#C8A8E8" transform="rotate(8 124 30)" opacity="0.7"/>
+  <!-- Body (cy 164→158) -->
+  <ellipse cx="100" cy="158" rx="50" ry="42" fill="#EEE0F8"/>
+  <!-- Tummy patch (cy 168→162) -->
+  <ellipse cx="100" cy="162" rx="30" ry="26" fill="#F8F0FF"/>
+  <!-- Head (cy 94→88 = STANDARD) -->
+  <circle cx="100" cy="88" r="52" fill="#EEE0F8"/>
+  <!-- Eye whites (cy 88→82) -->
+  <circle cx="80" cy="82" r="14" fill="white"/>
+  <circle cx="120" cy="82" r="14" fill="white"/>
+  <!-- Iris -->
+  <circle cx="80" cy="82" r="9" fill="#9B6EC8"/>
+  <circle cx="120" cy="82" r="9" fill="#9B6EC8"/>
   <!-- Pupils -->
-  <circle cx="80" cy="88" r="5.5" fill="#1A0E2D"/>
-  <circle cx="120" cy="88" r="5.5" fill="#1A0E2D"/>
-  <!-- Eye shine -->
-  <circle cx="83" cy="83" r="3" fill="white"/>
-  <circle cx="123" cy="83" r="3" fill="white"/>
-  <!-- Small gentle eyelashes -->
-  <path d="M 68 80 Q 72 76 76 80" stroke="#C8A8E8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <path d="M 124 80 Q 128 76 132 80" stroke="#C8A8E8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <!-- Nose - tiny pink -->
-  <ellipse cx="100" cy="106" rx="5" ry="4" fill="#D4A0C0"/>
-  <!-- Shy little smile -->
-  <path d="M 94 113 Q 100 118 106 113" stroke="#D4A0C0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <!-- Blush - very soft -->
-  <ellipse cx="67" cy="104" rx="12" ry="8" fill="#C8A8E8" opacity="0.4"/>
-  <ellipse cx="133" cy="104" rx="12" ry="8" fill="#C8A8E8" opacity="0.4"/>
-  <!-- Little hands held together -->
-  <ellipse cx="86" cy="186" rx="16" ry="12" fill="#EEE0F8"/>
-  <ellipse cx="114" cy="186" rx="16" ry="12" fill="#EEE0F8"/>
-  <!-- Fluffy tail -->
-  <circle cx="148" cy="172" r="12" fill="#F8F0FF"/>
-  <!-- Feet -->
-  <ellipse cx="78" cy="204" rx="22" ry="12" fill="#EEE0F8"/>
-  <ellipse cx="122" cy="204" rx="22" ry="12" fill="#EEE0F8"/>
+  <circle cx="80" cy="82" r="5.5" fill="#1A0E2D"/>
+  <circle cx="120" cy="82" r="5.5" fill="#1A0E2D"/>
+  <!-- Eye shine (cy 83→77) -->
+  <circle cx="83" cy="77" r="3" fill="white"/>
+  <circle cx="123" cy="77" r="3" fill="white"/>
+  <!-- Eyelashes (y 80→74, 76→70) -->
+  <path d="M 68 74 Q 72 70 76 74" stroke="#C8A8E8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 124 74 Q 128 70 132 74" stroke="#C8A8E8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Nose (cy 106→100) -->
+  <ellipse cx="100" cy="100" rx="5" ry="4" fill="#D4A0C0"/>
+  <!-- Shy smile (y 113→107, 118→112) -->
+  <path d="M 94 107 Q 100 112 106 107" stroke="#D4A0C0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- Blush (cy 104→98) -->
+  <ellipse cx="67" cy="98" rx="12" ry="8" fill="#C8A8E8" opacity="0.4"/>
+  <ellipse cx="133" cy="98" rx="12" ry="8" fill="#C8A8E8" opacity="0.4"/>
+  <!-- Little hands (cy 186→180) -->
+  <ellipse cx="86" cy="180" rx="16" ry="12" fill="#EEE0F8"/>
+  <ellipse cx="114" cy="180" rx="16" ry="12" fill="#EEE0F8"/>
+  <!-- Fluffy tail (cy 172→166) -->
+  <circle cx="148" cy="166" r="12" fill="#F8F0FF"/>
+  <!-- Feet (cy 204→198) -->
+  <ellipse cx="78" cy="198" rx="22" ry="12" fill="#EEE0F8"/>
+  <ellipse cx="122" cy="198" rx="22" ry="12" fill="#EEE0F8"/>
 </svg>
