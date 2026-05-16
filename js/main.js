@@ -280,6 +280,7 @@ function finishCreation() {
   state.lifetimeStats = { chatCount:0, catchCount:0, mmCount:0, shopCount:0, hugCount:0, totalCoinsEarned:0, outfitItemCount:0, trickCount:0, bubbleCount:0 };
   state.lastLetter    = 0; // M5: weekly letter timestamp
   saveGame(state);
+  showGame(); // ← was accidentally removed in v1.2.5 edit
 }
 
 // ══ Stats & Decay ══
