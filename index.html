@@ -91,7 +91,14 @@
         <span id="mood-expression" class="mood-expression" style="z-index:4"></span>
       </div>
       <div class="home-mood" id="home-mood">😊 <span>Feeling great!</span></div>
-      <div class="home-level" id="home-level">Lv.1 Tiny Cub</div>
+      <div style="display:flex;align-items:center;gap:8px;justify-content:center">
+        <div class="home-level" id="home-level">Lv.1 Tiny Cub</div>
+        <span id="home-time-label" class="time-label">☀️ Morning</span>
+      </div>
+      <!-- M5: weekly letter indicator -->
+      <button id="letter-indicator" class="letter-indicator" onclick="openLetter()" style="display:none">
+        ✉️ You have a letter!
+      </button>
     </div>
     <div class="stats-panel">
       <div class="stat-row"><span class="stat-icon">😊</span>
@@ -166,6 +173,16 @@
         <div class="game-title">Dress Up!</div>
         <div class="game-desc">Pick hats, accessories, and a cool background for your pet!</div>
         <div class="game-reward">💖 +4 Love · Free to use · Change anytime</div>
+      </div>
+    </div>
+
+    <!-- Bubble Pop -->
+    <div class="game-card" onclick="openBubblePop()">
+      <div class="game-icon">🫧</div>
+      <div class="game-info">
+        <div class="game-title">Bubble Pop! <span class="game-new-badge">NEW</span></div>
+        <div class="game-desc">Tap bubbles before they float away! Watch out for bombs! 💣</div>
+        <div class="game-reward">🪙 2 coins per pop · Golden 🌟 = 3 pts · Rainbow 🌈 = 5 pts</div>
       </div>
     </div>
 
@@ -345,6 +362,43 @@
           <button class="done-btn" onclick="closeMemoryMatch();navigate('home')">Done</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- M4: BUBBLE POP OVERLAY -->
+  <div class="game-overlay" id="bubblepop-overlay">
+    <div class="game-overlay-header">
+      <div class="game-overlay-title">🫧 Bubble Pop!</div>
+      <button class="game-close-btn" onclick="closeBubblePop()">✕</button>
+    </div>
+    <canvas id="bubble-canvas"></canvas>
+    <div class="gameover-panel" id="bp-result-overlay">
+      <div class="gameover-card">
+        <h2>Bubbles popped! 🫧</h2>
+        <div class="big-score" id="bp-result-score">0</div>
+        <div style="font-size:16px;color:#8878AA;margin:6px 0">pops</div>
+        <div class="coins-earned">+<span id="bp-result-coins">0</span> 🪙 coins!</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="play-again-btn" onclick="restartBubblePop()">Pop Again</button>
+          <button class="done-btn" onclick="closeBubblePop();navigate('home')">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- M5: WEEKLY LETTER OVERLAY -->
+  <div class="game-overlay letter-overlay" id="letter-overlay">
+    <div class="game-overlay-header">
+      <div class="game-overlay-title">✉️ A Letter from <span id="letter-pet-name">Your Pet</span></div>
+      <button class="game-close-btn" onclick="closeLetter()">✕</button>
+    </div>
+    <div class="letter-body">
+      <div class="letter-paper">
+        <pre id="letter-text" class="letter-text"></pre>
+      </div>
+      <button class="btn-primary letter-close-btn" onclick="closeLetter()">
+        💌 Collect +30 🪙 & Close
+      </button>
     </div>
   </div>
 

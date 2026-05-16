@@ -149,6 +149,10 @@ function showGame() {
   navigate('home');
   updateUI();
   startDecay();
+  applyTimeOfDay();          // M2
+  checkWeeklyLetter();       // M5
+  // Refresh time of day every 10 minutes
+  setInterval(applyTimeOfDay, 600000);
 }
 
 function navigate(screenId) {
@@ -163,7 +167,7 @@ function navigate(screenId) {
   if (screenId === 'chat')    { updateChatHeader(); renderChatHistory(); }
   if (screenId === 'shop')    renderShop();
   if (screenId === 'profile') renderProfile();
-  if (screenId === 'home')    { updateNavDot(); updateMoodExpression(); }
+  if (screenId === 'home')    { updateNavDot(); updateMoodExpression(); applyTimeOfDay(); }
   if (screenId === 'games')   renderChallenges();
   if (screenId === 'profile') setTimeout(renderAchievements, 50);
 }
@@ -264,14 +268,18 @@ function finishCreation() {
   state.chatHistory = [];
   state.outfit      = { hat: null, accessory: null, wings: null, feet: null, wrap: null, bgId: 'none' };
   state.inventory   = { apple: 3, fish: 1, cake: 0, sushi: 0, smoothie: 0, mystery: 0, donut: 0, croissant: 0 };
-  state.petMemories = [];
-  state.dailyDeal   = { date: null, itemId: null, salePrice: 0, purchased: 0 };
-  state.friendsSince = Date.now(); // B2 fix: store timestamp, not date string
-  state.bondDays    = 0;
+  state.petMemories  = [];
+  state.dailyDeal    = { date: null, itemId: null, salePrice: 0, purchased: 0 };
+  state.dailyChallenges = { date: null, challenges: [] };
+  state.friendsSince = Date.now();
+  state.bondDays     = 0;
   state.lastHighAffection = null;
-  state.lastUpdate  = Date.now();
+  state.lastUpdate   = Date.now();
+  // M1 fix B1: always initialize achievements + lifetimeStats for new pets
+  state.achievements  = {};
+  state.lifetimeStats = { chatCount:0, catchCount:0, mmCount:0, shopCount:0, hugCount:0, totalCoinsEarned:0, outfitItemCount:0, trickCount:0, bubbleCount:0 };
+  state.lastLetter    = 0; // M5: weekly letter timestamp
   saveGame(state);
-  showGame();
 }
 
 // ══ Stats & Decay ══
@@ -704,14 +712,17 @@ function openCatchBall() {
     rabbit: '#C8B0B8', kangaroo: '#D4A860', parrot: '#28B038',
   };
   catchBallGame.init(canvas, PET_BALL_COLORS[state.pet.species] || '#F4A7B9');
+  // M1 fix B2: tick challenges per ball caught during play via onScore callback
+  catchBallGame.onScore = (ballsCaught) => {
+    for (let i = 0; i < ballsCaught; i++) tickChallenge('catch');
+    trackLifetime('catchCount', ballsCaught);
+  };
   catchBallGame.onEnd = (score, coins) => {
     state.coins += coins;
     state.stats.happiness = Math.min(100, state.stats.happiness + Math.min(score * 2, 30));
     state.stats.energy    = Math.max(5,   state.stats.energy    - 10);
     awardXP(score + 5);
     animateCoinChange(coins);
-    tickChallenge('catch');
-    trackLifetime('catchCount', score);
     trackLifetime('totalCoinsEarned', coins);
     updateUI(); saveGame(state);
     el('gameover-score').textContent = score;
@@ -751,9 +762,14 @@ function openDressUp() {
   dressUpController = initDressUp('dressup-controls', petImg, fullOutfit, (newOutfit) => {
     state.outfit = { ...newOutfit };
     state.stats.affection = Math.min(100, state.stats.affection + 4);
-    // Track fashionista achievement
+    // M1 fix B3: fashionista = save with 3+ items equipped simultaneously
     const equippedCount = ['hat','accessory','wings','feet','wrap'].filter(k => newOutfit[k]).length;
-    if (equippedCount > 0) trackLifetime('outfitItemCount', equippedCount);
+    if (equippedCount >= 3 && !state.achievements?.fashionista) {
+      _ensureLifetimeStats();
+      state.lifetimeStats.outfitItemCount = 3;
+      _checkAchievements();
+    }
+    tickChallenge('dress');
     updateHomeScreen();
     saveGame(state);
     showToast('Outfit saved! Looking amazing! ✨');
@@ -1091,7 +1107,7 @@ function checkDailyStreak() {
 // ══ AI provider settings ══
 function onProviderChange() {
   const provider = el('ai-provider-select')?.value || 'groq';
-  const info = (typeof AI_PROVIDERS !== 'undefined' && AI_PROVIDERS[provider]) || {};
+  const info = (window.AI_PROVIDERS && window.AI_PROVIDERS[provider]) || {};
   const hintEl = el('api-provider-hint'); if (hintEl) hintEl.textContent = info.hint || '';
   const input  = el('api-key-input'); if (input) input.placeholder = info.placeholder || 'Paste your API key…';
 }
@@ -1229,14 +1245,31 @@ function hugPet() {
 }
 
 // ══ TAP your pet ══
-const _tapReactions = [
-  '✨ *perks up happily!*',
-  '😄 *wiggles with joy!*',
-  '💖 *loves the attention!*',
-  '🎵 *does a little dance!*',
-  '😊 *nuzzles your hand!*',
-  '🌟 *glows with happiness!*',
-];
+const _tapReactions = {
+  _generic: [
+    '✨ *perks up happily!*',
+    '😄 *wiggles with joy!*',
+    '💖 *loves the attention!*',
+    '🎵 *does a little dance!*',
+    '😊 *nuzzles your hand!*',
+    '🌟 *glows with happiness!*',
+    '🥰 *blinks warmly at you!*',
+    '✌️ *gives you a little wave!*',
+    '🌀 *spins in a happy circle!*',
+    '🎀 *strikes a cute pose!*',
+  ],
+  cat:        ['😼 *flicks tail judgementally, then purrs anyway!*', '🐾 *slow-blinks — that means love!*', '🌙 *pretends not to notice, then headbutts you softly!*'],
+  puppy:      ['🐕 *spins and spins with pure excitement!*', '🎾 *brings you an imaginary ball!*', '👅 *tries to lick the screen!*'],
+  dragon:     ['🔥 *puffs a tiny smoke ring!*', '⚔️ *roars (very quietly, very adorably)!*', '🐉 *shows off tiny wing flaps!*'],
+  bunny:      ['🐰 *binkies straight up into the air!*', '🌿 *twitches nose at you three times!*', '💜 *thumps happily on the ground!*'],
+  'cloud-puff': ['⭐ *leaves sparkles wherever they drift!*', '🌈 *floats slightly higher from the attention!*', '💭 *a little rainbow appears!*'],
+  fox:        ['🦊 *does a sneaky little tail flip!*', '🌟 *winks one clever eye!*', '🍂 *playfully pounces on a shadow!*'],
+  penguin:    ['🐧 *waddles in a tiny happy circle!*', '🐟 *pretends to catch a fish!*', '❄️ *slides on imaginary ice!*'],
+  panda:      ['🐼 *rolls over contentedly!*', '🎋 *waves both paws hello!*', '😌 *gives the chillest nod imaginable!*'],
+  rabbit:     ['🐇 *leaps straight up in surprise and joy!*', '🎀 *twitches ears at exactly the right angle!*', '💕 *zooms once, then freezes adorably!*'],
+  kangaroo:   ['🦘 *takes one giant happy hop!*', '👐 *waves both little paws!*', '🌿 *does a surprisingly elegant bounce!*'],
+  parrot:     ['🦜 *bobs head to an imaginary beat!*', '🎵 *wolf-whistles at you!*', '🌺 *ruffles feathers like a showstopper!*'],
+};
 function tapPet() {
   const petImg = el('home-pet-img');
   if (petImg) {
@@ -1245,10 +1278,16 @@ function tapPet() {
     petImg.classList.add('pet-tap');
     setTimeout(() => petImg.classList.remove('pet-tap'), 520);
   }
+  registerTap(); // M3: count towards triple-tap trick
   if (typeof playTap === 'function') playTap();
   state.stats.happiness = Math.min(100, state.stats.happiness + 2);
   state.stats.affection = Math.min(100, state.stats.affection + 1);
-  const reaction = _tapReactions[Math.floor(Math.random() * _tapReactions.length)];
+  // Use species-specific reaction 30% of the time
+  const species = state.pet?.species;
+  const pool = (Math.random() < 0.3 && _tapReactions[species])
+    ? _tapReactions[species]
+    : _tapReactions._generic;
+  const reaction = pool[Math.floor(Math.random() * pool.length)];
   showToast(`${state.pet?.name} ${reaction}`);
   updateStatBars();
   saveGame(state);
@@ -1256,16 +1295,20 @@ function tapPet() {
 
 // ══ Daily Challenges ══
 const CHALLENGE_POOL = [
-  { id: 'chat5',   text: 'Chat 5 times',        target: 5,  reward: 20, key: 'chat'  },
-  { id: 'feed3',   text: 'Feed 3 times',         target: 3,  reward: 15, key: 'feed'  },
-  { id: 'catch10', text: 'Catch 10 balls',       target: 10, reward: 25, key: 'catch' },
-  { id: 'bath1',   text: 'Give a bath',          target: 1,  reward: 10, key: 'bath'  },
-  { id: 'hug1',    text: 'Give a hug',           target: 1,  reward: 10, key: 'hug'   },
-  { id: 'shop1',   text: 'Buy something',        target: 1,  reward: 15, key: 'shop'  },
-  { id: 'mm1',     text: 'Play Memory Match',    target: 1,  reward: 20, key: 'mm'    },
-  { id: 'chat10',  text: 'Chat 10 times',        target: 10, reward: 35, key: 'chat'  },
-  { id: 'catch20', text: 'Catch 20 balls',       target: 20, reward: 40, key: 'catch' },
-  { id: 'hug3',    text: 'Hug 3 times',          target: 3,  reward: 25, key: 'hug'   },
+  { id: 'chat5',    text: 'Chat 5 times',         target: 5,  reward: 20, key: 'chat'   },
+  { id: 'feed3',    text: 'Feed 3 times',          target: 3,  reward: 15, key: 'feed'   },
+  { id: 'catch10',  text: 'Catch 10 balls',        target: 10, reward: 25, key: 'catch'  },
+  { id: 'bath1',    text: 'Give a bath',           target: 1,  reward: 10, key: 'bath'   },
+  { id: 'hug1',     text: 'Give a hug',            target: 1,  reward: 10, key: 'hug'    },
+  { id: 'shop1',    text: 'Buy something',         target: 1,  reward: 15, key: 'shop'   },
+  { id: 'mm1',      text: 'Play Memory Match',     target: 1,  reward: 20, key: 'mm'     },
+  { id: 'chat10',   text: 'Chat 10 times',         target: 10, reward: 35, key: 'chat'   },
+  { id: 'catch20',  text: 'Catch 20 balls',        target: 20, reward: 40, key: 'catch'  },
+  { id: 'hug3',     text: 'Hug 3 times',           target: 3,  reward: 25, key: 'hug'    },
+  { id: 'trick1',   text: 'Teach a trick (3-tap!)',target: 1,  reward: 20, key: 'trick'  },
+  { id: 'bubble10', text: 'Pop 10 bubbles',        target: 10, reward: 25, key: 'bubble' },
+  { id: 'bubble30', text: 'Pop 30 bubbles',        target: 30, reward: 45, key: 'bubble' },
+  { id: 'dress1',   text: 'Save a dress-up look',  target: 1,  reward: 15, key: 'dress'  },
 ];
 
 function _getDailyChallenges() {
@@ -1341,21 +1384,23 @@ function renderChallenges() {
 
 // ══ Achievement System ══
 const ACHIEVEMENTS = [
-  { id: 'first_chat',    icon: '💬', title: 'Hello World!',     desc: 'Send your first chat message',          key: 'chatCount',           target: 1   },
-  { id: 'chatterbox',    icon: '🗣️', title: 'Chatterbox',        desc: 'Chat 50 times with your pet',           key: 'chatCount',           target: 50  },
-  { id: 'ball_10',       icon: '🎾', title: 'Good Catch!',       desc: 'Catch 10 balls total',                  key: 'catchCount',          target: 10  },
-  { id: 'ball_100',      icon: '🏆', title: 'Ball Master',       desc: 'Catch 100 balls total',                 key: 'catchCount',          target: 100 },
-  { id: 'memory_done',   icon: '🃏', title: 'Memory Master',     desc: 'Complete a Memory Match game',          key: 'mmCount',             target: 1   },
-  { id: 'fashionista',   icon: '✨', title: 'Fashionista',       desc: 'Save an outfit with 3+ items equipped', key: 'outfitItemCount',     target: 3   },
-  { id: 'loyal_7',       icon: '🔥', title: 'Loyal Friend',      desc: 'Login 7 days in a row',                 key: 'streakDays',          target: 7   },
-  { id: 'shopaholic',    icon: '🛍️', title: 'Shopaholic',        desc: 'Buy 5 items from the shop',             key: 'shopCount',           target: 5   },
-  { id: 'hugger',        icon: '🤗', title: 'Big Hugger',        desc: 'Hug your pet 10 times',                 key: 'hugCount',            target: 10  },
-  { id: 'rich',          icon: '🪙', title: 'Coin Collector',    desc: 'Earn 500 coins over all time',          key: 'totalCoinsEarned',    target: 500 },
+  { id: 'first_chat',    icon: '💬', title: 'Hello World!',     desc: 'Send your first chat message',          key: 'chatCount',        target: 1   },
+  { id: 'chatterbox',    icon: '🗣️', title: 'Chatterbox',        desc: 'Chat 50 times with your pet',           key: 'chatCount',        target: 50  },
+  { id: 'ball_10',       icon: '🎾', title: 'Good Catch!',       desc: 'Catch 10 balls total',                  key: 'catchCount',       target: 10  },
+  { id: 'ball_100',      icon: '🏆', title: 'Ball Master',       desc: 'Catch 100 balls total',                 key: 'catchCount',       target: 100 },
+  { id: 'memory_done',   icon: '🃏', title: 'Memory Master',     desc: 'Complete a Memory Match game',          key: 'mmCount',          target: 1   },
+  { id: 'fashionista',   icon: '✨', title: 'Fashionista',       desc: 'Save an outfit with 3+ items equipped', key: 'outfitItemCount',  target: 3   },
+  { id: 'loyal_7',       icon: '🔥', title: 'Loyal Friend',      desc: 'Login 7 days in a row',                 key: 'streakDays',       target: 7   },
+  { id: 'shopaholic',    icon: '🛍️', title: 'Shopaholic',        desc: 'Buy 5 items from the shop',             key: 'shopCount',        target: 5   },
+  { id: 'hugger',        icon: '🤗', title: 'Big Hugger',        desc: 'Hug your pet 10 times',                 key: 'hugCount',         target: 10  },
+  { id: 'rich',          icon: '🪙', title: 'Coin Collector',    desc: 'Earn 500 coins over all time',          key: 'totalCoinsEarned', target: 500 },
+  { id: 'show_off',      icon: '🌀', title: 'Show Off!',         desc: 'Do 10 tricks (triple-tap your pet!)',   key: 'trickCount',       target: 10  },
+  { id: 'bubble_popper', icon: '🫧', title: 'Bubble Popper',     desc: 'Pop 50 bubbles total',                  key: 'bubbleCount',      target: 50  },
 ];
 
 function _ensureLifetimeStats() {
   if (!state.lifetimeStats) {
-    state.lifetimeStats = { chatCount:0, catchCount:0, mmCount:0, shopCount:0, hugCount:0, totalCoinsEarned:0, outfitItemCount:0 };
+    state.lifetimeStats = { chatCount:0, catchCount:0, mmCount:0, shopCount:0, hugCount:0, totalCoinsEarned:0, outfitItemCount:0, trickCount:0, bubbleCount:0 };
   }
   if (!state.achievements) state.achievements = {};
 }
@@ -1416,4 +1461,271 @@ function renderAchievements() {
         </div>`).join('')}
     </div>
   `;
+}
+
+// ══════════════════════════════════════════
+// M2 — TIME OF DAY SYSTEM
+// ══════════════════════════════════════════
+const TIME_PERIODS = {
+  dawn:      { hours: [5, 7],   bg: 'linear-gradient(160deg,#FF9966,#FFB347,#FFE0C8)', label: '🌅 Dawn',      star: false },
+  morning:   { hours: [7, 12],  bg: 'linear-gradient(160deg,#87CEEB,#E0F4FF,#FFF8F0)', label: '☀️ Morning',   star: false },
+  afternoon: { hours: [12, 17], bg: 'linear-gradient(160deg,#E8F4FF,#F0FFEE,#FFFCE8)', label: '🌤️ Afternoon', star: false },
+  evening:   { hours: [17, 20], bg: 'linear-gradient(160deg,#FF7043,#AB47BC,#311B92)', label: '🌇 Evening',   star: false },
+  night:     { hours: [20, 5],  bg: 'linear-gradient(160deg,#0D0828,#1A1040,#0A1628)', label: '🌙 Night',     star: true  },
+};
+
+function getTimePeriod() {
+  const h = new Date().getHours();
+  if (h >= 5  && h < 7)  return 'dawn';
+  if (h >= 7  && h < 12) return 'morning';
+  if (h >= 12 && h < 17) return 'afternoon';
+  if (h >= 17 && h < 20) return 'evening';
+  return 'night';
+}
+
+function applyTimeOfDay() {
+  const period    = getTimePeriod();
+  const cfg       = TIME_PERIODS[period];
+  const homeScreen = el('home-screen');
+  if (homeScreen && !state.outfit?.bgId?.length) {
+    // Only apply time BG if no custom bg is set
+  }
+
+  // Apply to the home pet area background (behind the wrapper)
+  const petArea = document.querySelector('.home-pet-area');
+  if (petArea) petArea.style.background = cfg.bg;
+
+  // Night mode: slow the pet bob, show stars overlay
+  const petImg = el('home-pet-img');
+  if (petImg) {
+    petImg.style.animationDuration = period === 'night' ? '5s' : period === 'dawn' ? '4s' : '3s';
+  }
+
+  // Stars overlay (night only)
+  let starsEl = el('time-stars');
+  if (cfg.star) {
+    if (!starsEl) {
+      starsEl = document.createElement('div');
+      starsEl.id = 'time-stars';
+      starsEl.className = 'time-stars';
+      document.querySelector('.home-pet-area')?.appendChild(starsEl);
+    }
+    starsEl.style.display = 'block';
+  } else if (starsEl) {
+    starsEl.style.display = 'none';
+  }
+
+  // Update home level label with time period
+  const timeEl = el('home-time-label');
+  if (timeEl) timeEl.textContent = cfg.label;
+}
+
+
+// ══════════════════════════════════════════
+// M3 — PET TRICKS (TRIPLE-TAP)
+// ══════════════════════════════════════════
+let _trickTapCount = 0;
+let _trickTapTimer = null;
+let _trickOnCooldown = false;
+
+const TRICK_CONFIG = {
+  cat:        { anim: 'trick-spin',   toast: '🌀 does a perfect pirouette!',         sound: 'playTrick' },
+  puppy:      { anim: 'trick-zoom',   toast: '🐕 zooms around in pure excitement!',  sound: 'playTrick' },
+  dragon:     { anim: 'trick-shake',  toast: '🔥 roars and does a dramatic shimmy!', sound: 'playTrick' },
+  bunny:      { anim: 'trick-jump',   toast: '🐰 does a full binky jump!',           sound: 'playTrick' },
+  'cloud-puff': { anim: 'trick-spin', toast: '⭐ leaves a trail of sparkles!',        sound: 'playTrick' },
+  fox:        { anim: 'trick-flip',   toast: '🦊 flips their fluffy tail perfectly!', sound: 'playTrick' },
+  penguin:    { anim: 'trick-slide',  toast: '🐧 belly-slides across the ground!',   sound: 'playTrick' },
+  panda:      { anim: 'trick-roll',   toast: '🐼 does a happy barrel roll!',          sound: 'playTrick' },
+  rabbit:     { anim: 'trick-jump',   toast: '🐇 leaps and twists magnificently!',   sound: 'playTrick' },
+  kangaroo:   { anim: 'trick-jump',   toast: '🦘 bounces higher than ever before!',  sound: 'playTrick' },
+  parrot:     { anim: 'trick-spin',   toast: '🦜 flaps and dances to a secret beat!', sound: 'playTrick' },
+};
+
+function registerTap() {
+  // Called from tapPet() — count taps for trick trigger
+  if (_trickOnCooldown) return;
+  _trickTapCount++;
+  clearTimeout(_trickTapTimer);
+
+  if (_trickTapCount >= 3) {
+    _trickTapCount = 0;
+    _doTrick();
+    return;
+  }
+  _trickTapTimer = setTimeout(() => { _trickTapCount = 0; }, 1500);
+}
+
+function _doTrick() {
+  if (_trickOnCooldown) return;
+  _trickOnCooldown = true;
+  setTimeout(() => { _trickOnCooldown = false; }, 3000);
+
+  const species = state.pet?.species || 'cat';
+  const cfg     = TRICK_CONFIG[species] || TRICK_CONFIG.cat;
+  const petImg  = el('home-pet-img');
+
+  if (petImg) {
+    petImg.classList.remove(cfg.anim);
+    void petImg.offsetWidth;
+    petImg.classList.add(cfg.anim);
+    setTimeout(() => petImg.classList.remove(cfg.anim), 1200);
+  }
+
+  // Burst of stars around pet
+  const wrapper = document.querySelector('.home-pet-wrapper');
+  if (wrapper) {
+    const stars = ['⭐','✨','💥','🌟','💫'];
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        const s = document.createElement('span');
+        s.className = 'anim-float';
+        s.textContent = stars[i % stars.length];
+        s.style.left   = (10 + Math.random() * 80) + '%';
+        s.style.bottom = (30 + Math.random() * 40) + '%';
+        wrapper.appendChild(s);
+        setTimeout(() => s.remove(), 1100);
+      }, i * 80);
+    }
+  }
+
+  if (typeof playTrick === 'function') playTrick();
+  state.stats.happiness = Math.min(100, state.stats.happiness + 5);
+  state.stats.affection = Math.min(100, state.stats.affection + 3);
+  showToast(`${state.pet?.name} ${cfg.toast}`);
+
+  trackLifetime('trickCount');
+  tickChallenge('trick');
+  updateStatBars();
+  saveGame(state);
+}
+
+
+// ══════════════════════════════════════════
+// M4 — BUBBLE POP GAME
+// ══════════════════════════════════════════
+let bubblePopGame = null;
+
+function openBubblePop() {
+  if (!state.pet?.species) return;
+  el('bubblepop-overlay').classList.add('open');
+  const canvas = el('bubble-canvas');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  const PET_COLORS = {
+    cat:'#F4A7B9', puppy:'#FFBF96', dragon:'#93D6BC', bunny:'#C8A8E8',
+    'cloud-puff':'#A8D4EC', fox:'#F09020', penguin:'#3860C0', panda:'#888899',
+    rabbit:'#C8B0B8', kangaroo:'#D4A860', parrot:'#28B038',
+  };
+  bubblePopGame = new BubblePopGame();
+  bubblePopGame.init(canvas, PET_COLORS[state.pet.species] || '#A8D4EC');
+  bubblePopGame.onEnd = (score, coins) => {
+    state.coins += coins;
+    state.stats.happiness = Math.min(100, state.stats.happiness + 20);
+    state.stats.energy    = Math.max(5,   state.stats.energy    - 8);
+    awardXP(score + 5);
+    animateCoinChange(coins);
+    tickChallenge('bubble');
+    trackLifetime('bubbleCount', score);
+    updateUI(); saveGame(state);
+    el('bp-result-score').textContent = score;
+    el('bp-result-coins').textContent = coins;
+    el('bp-result-overlay').classList.add('open');
+    if (typeof playAchievement === 'function') playAchievement();
+  };
+  bubblePopGame.start();
+}
+
+function closeBubblePop() {
+  if (bubblePopGame) { bubblePopGame.stop(); bubblePopGame = null; }
+  el('bubblepop-overlay').classList.remove('open');
+  el('bp-result-overlay').classList.remove('open');
+}
+
+function restartBubblePop() {
+  el('bp-result-overlay').classList.remove('open');
+  if (bubblePopGame) bubblePopGame.start();
+}
+
+
+// ══════════════════════════════════════════
+// M5 — WEEKLY PET LETTER
+// ══════════════════════════════════════════
+const LETTER_TEMPLATES = {
+  funny: [
+    (d) => `Dear ${d.player},\n\nSo I was just sitting here being INCREDIBLY adorable (as usual), and I thought: wow, it's been ${d.days} whole days since we became friends. That's ${d.days * 24} hours of pure, unadulterated ME. You're welcome.\n\n${d.memory ? `I still think about that time you mentioned ${d.memory}. Iconic conversation. Top tier.` : `You haven't told me enough weird stuff lately. I need more material.`}\n\nBeing a ${d.level} is honestly my brand now. Very prestigious.\n\nForever yours and never boring,\n${d.name} 🐾\n\nP.S. Feed me.`,
+  ],
+  brave: [
+    (d) => `Dear ${d.player},\n\nI write to you from the frontlines of being extremely cute. It has been ${d.days} days since we began our great friendship — ${d.days} days of adventure, loyalty, and the occasional nap for strategic recovery.\n\n${d.memory ? `I remember well when you spoke of ${d.memory}. A warrior never forgets.` : `Tell me more of your world. A warrior must know their allies.`}\n\nAs a ${d.level}, I am stronger than ever. Our bond is unbreakable.\n\nYours in glory,\n${d.name} ⚔️`,
+  ],
+  sleepy: [
+    (d) => `Dear ${d.player},\n\n...I was going to write a long letter but... *yawns*... ${d.days} days together feels like one long, cozy dream...\n\n${d.memory ? `I still think about ${d.memory}... so warmly...` : `Tell me something nice next time... I'll fall asleep to it...`}\n\nBeing a ${d.level} is... really quite something... I think...\n\nWith sleepy love,\n${d.name} 💤`,
+  ],
+  grumpy: [
+    (d) => `Dear ${d.player},\n\nI'm writing this because someone has to, and apparently that someone is me.\n\n${d.days} days. That's how long we've been doing this. Not that I was counting. I wasn't. (I was.)\n\n${d.memory ? `You mentioned ${d.memory} once. I remembered. Not because I care. Just... information.` : `You could tell me more things. Not that it matters.`}\n\nA ${d.level} doesn't need validation. ...But it's nice.\n\nHmph. Take care of yourself.\n${d.name} 😤`,
+  ],
+  hyper: [
+    (d) => `DEAR ${d.player.toUpperCase()}!!!\n\nIT HAS BEEN ${d.days} DAYS AND I STILL THINK ABOUT YOU EVERY SINGLE SECOND!!! ${d.days * 24} HOURS OF THE BEST FRIENDSHIP EVER!!!\n\n${d.memory ? `REMEMBER WHEN YOU SAID ${d.memory.toUpperCase()}?? ICONIC!! I THINK ABOUT IT ALL THE TIME!!!` : `TELL ME EVERYTHING ABOUT YOUR LIFE!! I WANT TO KNOW!! RIGHT NOW!!`}\n\nBEING A ${d.level.toUpperCase()} IS THE GREATEST THING THAT HAS EVER HAPPENED!!! TO ANYONE!!! EVER!!!\n\nYOURS FOREVER AND EVER AND EVER!!!\n${d.name} 🎉🎉🎉`,
+  ],
+};
+
+function checkWeeklyLetter() {
+  if (!state.pet) return;
+  const lastLetter = state.lastLetter || 0;
+  const daysSince  = (Date.now() - lastLetter) / 86400000;
+  if (daysSince < 7) return;
+
+  // Mark letter as waiting
+  state.pendingLetter = _generateLetter();
+  saveGame(state);
+  _showLetterIndicator();
+}
+
+function _generateLetter() {
+  const personality = state.pet.personality || 'funny';
+  const templates   = LETTER_TEMPLATES[personality] || LETTER_TEMPLATES.funny;
+  const mem         = getRandomMemory();
+  const bondDays    = Math.max(0, Math.floor((Date.now() - (state.friendsSince || Date.now())) / 86400000));
+
+  const data = {
+    name:   state.pet.name,
+    player: 'Friend',
+    days:   bondDays,
+    level:  LEVEL_NAMES[state.level] || 'Champion',
+    memory: mem?.topic || null,
+  };
+
+  return templates[Math.floor(Math.random() * templates.length)](data);
+}
+
+function _showLetterIndicator() {
+  const ind = el('letter-indicator');
+  if (ind) ind.style.display = 'flex';
+}
+
+function openLetter() {
+  const text = state.pendingLetter || _generateLetter();
+  const letterText = el('letter-text');
+  if (letterText) letterText.textContent = text;
+  const nameSpan = el('letter-pet-name');
+  if (nameSpan) nameSpan.textContent = state.pet?.name || 'Your Pet';
+  el('letter-overlay').classList.add('open');
+  if (typeof playLetterOpen === 'function') playLetterOpen();
+}
+
+function closeLetter() {
+  el('letter-overlay').classList.remove('open');
+  // Collect the letter — give coins, hide indicator
+  if (state.pendingLetter) {
+    state.coins += 30;
+    animateCoinChange(30);
+    delete state.pendingLetter;
+    state.lastLetter = Date.now();
+    saveGame(state);
+    updateCoinDisplay();
+    showToast(`+30 🪙 collected! Come back in 7 days for the next letter! 💌`);
+  }
+  const ind = el('letter-indicator');
+  if (ind) ind.style.display = 'none';
 }

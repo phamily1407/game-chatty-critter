@@ -205,3 +205,30 @@ function playPurchase() {
   _tone(1047, 0.10, 'sine', 0.16, 0.06);
   _tone(1319, 0.13, 'sine', 0.13, 0.12);
 }
+
+// Pet trick (triple-tap) — whimsical ascending run
+function playTrick() {
+  [523, 659, 784, 1047, 1319, 1047].forEach((f, i) => _tone(f, 0.12, 'sine', 0.2, i * 0.07));
+}
+
+// Bubble pop — soft airy pop
+function playBubblePop(golden = false) {
+  if (golden) {
+    _tone(1047, 0.08, 'sine', 0.24);
+    _tone(1319, 0.12, 'sine', 0.2, 0.06);
+    _tone(1568, 0.15, 'sine', 0.16, 0.12);
+  } else {
+    _tone(880, 0.07, 'sine', 0.16);
+  }
+}
+
+// Bubble miss — soft descending
+function playBubbleMiss() {
+  _tone(330, 0.12, 'triangle', 0.14);
+  _tone(247, 0.15, 'triangle', 0.11, 0.08);
+}
+
+// Weekly letter open — gentle rustling
+function playLetterOpen() {
+  [330, 392, 440, 523].forEach((f, i) => _tone(f, 0.15, 'sine', 0.14, i * 0.08));
+}

@@ -224,6 +224,7 @@ class CatchBallGame {
     this.running  = false;
     this.animId   = null;
     this.onEnd    = null;
+    this.onScore  = null; // called with (count) each time ball(s) caught
     this.petColor = '#F4A7B9';
     this._lastPowerSpawn = 0;
     this._frameCount = 0;
@@ -514,6 +515,8 @@ class CatchBallGame {
       const pts   = (ball.type === 'golden' ? 3 : 1) * mult;
       this.score += pts;
       caught = true;
+      // M1 fix B2: fire onScore per catch so challenge can track per ball
+      if (typeof this.onScore === 'function') this.onScore(1);
 
       const label = pts > 1 ? `+${pts} 🌟` : `+${pts}`;
       this._addPopText(label, ball.x, ball.y - 20, ball.type === 'golden' ? '#FFD700' : this.petColor, 20);
@@ -704,5 +707,213 @@ class MemoryMatchGame {
     const coins   = this.score;
     const xp      = cfg.pairs * cfg.xpPer;
     if (typeof this.onEnd === 'function') this.onEnd(this.score, coins, xp, this.moves, elapsed);
+  }
+}
+
+
+// ══ Bubble Pop Game ══
+class BubblePopGame {
+  constructor() {
+    this.canvas  = null;
+    this.ctx     = null;
+    this.bubbles = [];
+    this.score   = 0;
+    this.misses  = 0;
+    this.maxMiss = 5;
+    this.pops    = 0;       // total pops, used for golden bubble spawn
+    this.running = false;
+    this.animId  = null;
+    this.onEnd   = null;
+    this.petColor = '#A8D4EC';
+    this._spawnTimer = 0;
+    this._spawnRate  = 120; // frames between spawns (starts slow)
+    this._frameCount = 0;
+  }
+
+  init(canvas, petColor) {
+    this.canvas   = canvas;
+    this.ctx      = canvas.getContext('2d');
+    this.petColor = petColor || '#A8D4EC';
+    canvas.addEventListener('click',      e => this._tap(e.clientX, e.clientY));
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      this._tap(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+  }
+
+  start() {
+    this.bubbles = []; this.score = 0; this.misses = 0; this.pops = 0;
+    this.running = true; this._frameCount = 0; this._spawnTimer = 0;
+    this._spawnRate = 120;
+    this._loop();
+  }
+
+  stop() {
+    this.running = false;
+    cancelAnimationFrame(this.animId);
+  }
+
+  _loop() {
+    if (!this.running) return;
+    this._update();
+    this._draw();
+    this.animId = requestAnimationFrame(() => this._loop());
+  }
+
+  _update() {
+    this._frameCount++;
+    this._spawnTimer++;
+
+    // Speed up spawning as score grows
+    const rate = Math.max(50, 120 - Math.floor(this.pops / 5) * 8);
+    if (this._spawnTimer >= rate) {
+      this._spawnTimer = 0;
+      this._spawnBubble();
+    }
+
+    // Move bubbles upward
+    this.bubbles = this.bubbles.filter(b => {
+      b.y -= b.speed;
+      b.wobble += 0.05;
+      b.x += Math.sin(b.wobble) * 0.8;
+      if (b.y + b.r < 0) {
+        // Bubble escaped
+        if (b.type !== 'bomb') {
+          this.misses++;
+          if (typeof playBubbleMiss === 'function') playBubbleMiss();
+          if (this.misses >= this.maxMiss) { this._gameOver(); return false; }
+        }
+        return false;
+      }
+      return true;
+    });
+  }
+
+  _spawnBubble() {
+    const c = this.canvas;
+    const r = 22 + Math.random() * 14;
+    let type = 'normal';
+    if (this.pops > 0 && this.pops % 20 === 0 && this.bubbles.every(b => b.type !== 'rainbow')) type = 'rainbow';
+    else if (this.pops > 0 && this.pops % 8  === 0 && this.bubbles.every(b => b.type !== 'golden')) type = 'golden';
+    else if (this.pops >= 15 && Math.random() < 0.12) type = 'bomb';
+
+    const colors = { normal: this.petColor, golden: '#FFD700', rainbow: null, bomb: '#FF4444' };
+    this.bubbles.push({
+      x: r + Math.random() * (c.width - r * 2),
+      y: c.height + r,
+      r, type,
+      color: colors[type] || this.petColor,
+      speed: 1.2 + Math.random() * 1.2,
+      wobble: Math.random() * Math.PI * 2,
+      opacity: 0.82 + Math.random() * 0.18,
+    });
+  }
+
+  _draw() {
+    const { canvas: c, ctx } = this;
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, c.height);
+    bg.addColorStop(0, '#E8F4FF'); bg.addColorStop(1, '#F0F8FF');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, c.width, c.height);
+
+    // Bubbles
+    this.bubbles.forEach(b => {
+      ctx.save();
+      ctx.globalAlpha = b.opacity;
+
+      if (b.type === 'rainbow') {
+        // Rainbow gradient fill
+        const grad = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, 0, b.x, b.y, b.r);
+        ['#FFB3C6','#FFD4A3','#FFFF9A','#C3F7C3','#A3D8FF','#D4A8F0'].forEach((c2, i, a) => grad.addColorStop(i/(a.length-1), c2));
+        ctx.fillStyle = grad;
+      } else {
+        const grad = ctx.createRadialGradient(b.x - b.r*0.35, b.y - b.r*0.35, 0, b.x, b.y, b.r);
+        grad.addColorStop(0, b.type === 'bomb' ? '#FF8888' : 'rgba(255,255,255,0.8)');
+        grad.addColorStop(0.5, b.color + 'AA');
+        grad.addColorStop(1, b.color + '55');
+        ctx.fillStyle = grad;
+      }
+
+      // Bubble circle
+      ctx.shadowColor = b.type === 'bomb' ? '#FF4444' : b.color;
+      ctx.shadowBlur  = b.type === 'golden' || b.type === 'rainbow' ? 16 : 6;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur  = 0;
+
+      // Shine
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = 'white';
+      ctx.beginPath(); ctx.arc(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.3, 0, Math.PI*2); ctx.fill();
+
+      // Label on special bubbles
+      if (b.type !== 'normal') {
+        ctx.globalAlpha = 1;
+        ctx.font = `${Math.round(b.r * 0.9)}px Nunito`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText({ golden: '⭐', rainbow: '🌈', bomb: '💣' }[b.type], b.x, b.y);
+      }
+
+      ctx.restore();
+    });
+
+    // HUD
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#3D3550';
+    ctx.font = 'bold 18px Nunito, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Score: ${this.score}`, 14, 30);
+
+    // Miss indicators (hearts)
+    ctx.font = '22px Nunito';
+    for (let i = 0; i < this.maxMiss; i++) {
+      ctx.fillStyle = i < this.maxMiss - this.misses ? '#F4A7B9' : '#DDD0E8';
+      ctx.fillText('♥', c.width - 38 - i * 30, 32);
+    }
+
+    // Pop count & speed
+    ctx.fillStyle = '#8878AA'; ctx.font = 'bold 12px Nunito';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Pops: ${this.pops}`, c.width - 10, c.height - 12);
+  }
+
+  _tap(clientX, clientY) {
+    if (!this.running) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = (clientX - rect.left) * (this.canvas.width / rect.width);
+    const y = (clientY - rect.top)  * (this.canvas.height / rect.height);
+
+    let popped = false;
+    this.bubbles = this.bubbles.filter(b => {
+      const d = Math.hypot(x - b.x, y - b.y);
+      if (d > b.r + 12) return true;
+
+      if (b.type === 'bomb') {
+        this.misses = Math.min(this.maxMiss, this.misses + 2);
+        if (typeof playBubbleMiss === 'function') playBubbleMiss();
+        if (this.misses >= this.maxMiss) { this._gameOver(); }
+        return false;
+      }
+
+      const pts = { normal: 1, golden: 3, rainbow: 5 }[b.type] || 1;
+      this.score += pts;
+      this.pops++;
+      popped = true;
+      if (typeof playBubblePop === 'function') playBubblePop(b.type !== 'normal');
+      return false;
+    });
+
+    // Miss tap (didn't hit anything)
+    if (!popped) {
+      // No penalty for miss-tapping air — this game is forgiving
+    }
+  }
+
+  _gameOver() {
+    this.running = false;
+    cancelAnimationFrame(this.animId);
+    const coins = Math.max(1, this.score * 2);
+    if (typeof this.onEnd === 'function') this.onEnd(this.score, coins);
   }
 }

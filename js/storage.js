@@ -18,11 +18,14 @@ const DEFAULT_STATE = {
   // daily challenges
   dailyChallenges: { date: null, challenges: [] },
   // achievement system
-  achievements: {},        // { achievementId: true }
+  achievements: {},
   lifetimeStats: {
     chatCount: 0, catchCount: 0, mmCount: 0,
     shopCount: 0, hugCount: 0, totalCoinsEarned: 0, outfitItemCount: 0,
+    trickCount: 0, bubbleCount: 0,
   },
+  lastLetter:    0,    // M5: timestamp of last weekly letter
+  pendingLetter: null, // M5: generated letter text waiting to be read
   // M2: bond/affection tracking
   friendsSince:      null,
   lastHighAffection: null,
